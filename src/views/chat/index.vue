@@ -1,639 +1,764 @@
 <script setup lang='ts'>
-import type { Ref } from 'vue'
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { storeToRefs } from 'pinia'
-import type { MessageReactive } from 'naive-ui'
-import { NAutoComplete, NButton, NInput, NSpin, useDialog, useMessage } from 'naive-ui'
-import html2canvas from 'html2canvas'
-import { Message } from './components'
-import { useScroll } from './hooks/useScroll'
-import { useChat } from './hooks/useChat'
-import { useCopyCode } from './hooks/useCopyCode'
-import { useUsingContext } from './hooks/useUsingContext'
-import HeaderComponent from './components/Header/index.vue'
-import { HoverButton, SvgIcon } from '@/components/common'
-import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { useAuthStore, useChatStore, usePromptStore } from '@/store'
-import { fetchChatAPIProcess } from '@/api'
-import { t } from '@/locales'
-import { debounce } from '@/utils/functions/debounce'
+	import type {Ref} from 'vue'
+	import {computed, nextTick, onMounted, onUnmounted, ref} from 'vue'
+	import {useRoute} from 'vue-router'
+	import {storeToRefs} from 'pinia'
+	import type {MessageReactive} from 'naive-ui'
+	import {NAutoComplete, NButton, NInput, NSpin, useDialog, useMessage} from 'naive-ui'
+	import html2canvas from 'html2canvas'
+	import {Message} from './components'
+	import {useScroll} from './hooks/useScroll'
+	import {useChat} from './hooks/useChat'
+	import {useCopyCode} from './hooks/useCopyCode'
+	import {useUsingContext} from './hooks/useUsingContext'
+	import HeaderComponent from './components/Header/index.vue'
+	import {HoverButton, SvgIcon} from '@/components/common'
+	import {useBasicLayout} from '@/hooks/useBasicLayout'
+	import {useAuthStore, useChatStore, usePromptStore} from '@/store'
+	import {fetchChatAPIProcess} from '@/api'
+	import {t} from '@/locales'
+	import {debounce} from '@/utils/functions/debounce'
 
-let controller = new AbortController()
+	let controller = new AbortController()
 
-const openLongReply = import.meta.env.VITE_GLOB_OPEN_LONG_REPLY === 'true'
+	const openLongReply = import.meta.env.VITE_GLOB_OPEN_LONG_REPLY === 'true'
 
-const route = useRoute()
-const dialog = useDialog()
-const ms = useMessage()
-const authStore = useAuthStore()
+	const route = useRoute()
+	const dialog = useDialog()
+	const ms = useMessage()
+	const authStore = useAuthStore()
 
-const chatStore = useChatStore()
+	const chatStore = useChatStore()
 
-useCopyCode()
+	useCopyCode()
 
-const { isMobile } = useBasicLayout()
-const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
-const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom, scrollTo } = useScroll()
-const { usingContext, toggleUsingContext } = useUsingContext()
+	const {isMobile} = useBasicLayout()
+	const {addChat, updateChat, updateChatSome, getChatByUuidAndIndex} = useChat()
+	const {scrollRef, scrollToBottom, scrollToBottomIfAtBottom, scrollTo} = useScroll()
+	const {usingContext, toggleUsingContext} = useUsingContext()
 
-const { uuid } = route.params as { uuid: string }
+	const {uuid} = route.params as { uuid: string }
 
-const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
-const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !!item.conversationOptions)))
+	const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
+	const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !!item.conversationOptions)))
 
-const prompt = ref<string>('')
-const firstLoading = ref<boolean>(false)
-const loading = ref<boolean>(false)
-const inputRef = ref<Ref | null>(null)
+	const prompt = ref<string>('')
+	const firstLoading = ref<boolean>(false)
+	const loading = ref<boolean>(false)
+	const inputRef = ref<Ref | null>(null)
 
-let loadingms: MessageReactive
-let allmsg: MessageReactive
-let prevScrollTop: number
+	let loadingms: MessageReactive
+	let allmsg: MessageReactive
+	let prevScrollTop: number
 
-// 添加PromptStore
-const promptStore = usePromptStore()
+	// 添加PromptStore
+	const promptStore = usePromptStore()
 
-// 使用storeToRefs，保证store修改后，联想部分能够重新渲染
-const { promptList: promptTemplate } = storeToRefs<any>(promptStore)
+	// 使用storeToRefs，保证store修改后，联想部分能够重新渲染
+	const {promptList: promptTemplate} = storeToRefs<any>(promptStore)
 
-// 未知原因刷新页面，loading 状态不会重置，手动重置
-dataSources.value.forEach((item, index) => {
-  if (item.loading)
-    updateChatSome(+uuid, index, { loading: false })
-})
+	// 未知原因刷新页面，loading 状态不会重置，手动重置
+	dataSources.value.forEach((item, index) => {
+		if (item.loading)
+			updateChatSome(+uuid, index, {loading: false})
+	})
 
-function handleSubmit() {
-  onConversation()
-}
+	function handleSubmit() {
+		onConversation()
+	}
 
-async function onConversation() {
-  let message = prompt.value
+	async function onConversation() {
+		let message = prompt.value
 
-  if (loading.value)
-    return
+		if (loading.value)
+			return
 
-  if (!message || message.trim() === '')
-    return
+		if (!message || message.trim() === '')
+			return
 
-  controller = new AbortController()
+		controller = new AbortController()
 
-  const chatUuid = Date.now()
-  addChat(
-    +uuid,
-    {
-      uuid: chatUuid,
-      dateTime: new Date().toLocaleString(),
-      text: message,
-      inversion: true,
-      error: false,
-      conversationOptions: null,
-      requestOptions: { prompt: message, options: null },
-    },
-  )
-  scrollToBottom()
+		const chatUuid = Date.now()
+		addChat(
+			+uuid,
+			{
+				uuid: chatUuid,
+				dateTime: new Date().toLocaleString(),
+				text: message,
+				inversion: true,
+				error: false,
+				conversationOptions: null,
+				requestOptions: {prompt: message, options: null},
+			},
+		)
+		scrollToBottom()
 
-  loading.value = true
-  prompt.value = ''
+		loading.value = true
+		prompt.value = ''
 
-  let options: Chat.ConversationRequest = {}
-  const lastContext = conversationList.value[conversationList.value.length - 1]?.conversationOptions
+		let options: Chat.ConversationRequest = {}
+		const lastContext = conversationList.value[conversationList.value.length - 1]?.conversationOptions
 
-  if (lastContext && usingContext.value)
-    options = { ...lastContext }
+		if (lastContext && usingContext.value)
+			options = {...lastContext}
 
-  addChat(
-    +uuid,
-    {
-      uuid: chatUuid,
-      dateTime: new Date().toLocaleString(),
-      text: '',
-      loading: true,
-      inversion: false,
-      error: false,
-      conversationOptions: null,
-      requestOptions: { prompt: message, options: { ...options } },
-    },
-  )
-  scrollToBottom()
+		addChat(
+			+uuid,
+			{
+				uuid: chatUuid,
+				dateTime: new Date().toLocaleString(),
+				text: '',
+				loading: true,
+				inversion: false,
+				error: false,
+				conversationOptions: null,
+				requestOptions: {prompt: message, options: {...options}},
+			},
+		)
+		scrollToBottom()
 
-  try {
-    let lastText = ''
-    const fetchChatAPIOnce = async () => {
-      await fetchChatAPIProcess<Chat.ConversationResponse>({
-        roomId: +uuid,
-        uuid: chatUuid,
-        prompt: message,
-        options,
-        signal: controller.signal,
-        onDownloadProgress: ({ event }) => {
-          const xhr = event.target
-          const { responseText } = xhr
-          // Always process the final line
-          const lastIndex = responseText.lastIndexOf('\n', responseText.length - 2)
-          let chunk = responseText
-          if (lastIndex !== -1)
-            chunk = responseText.substring(lastIndex)
-          try {
-            const data = JSON.parse(chunk)
-            const usage = data.detail.usage
-              ? {
-                  completion_tokens: data.detail.usage.completion_tokens || null,
-                  prompt_tokens: data.detail.usage.prompt_tokens || null,
-                  total_tokens: data.detail.usage.total_tokens || null,
-                  estimated: data.detail.usage.estimated || null,
-                }
-              : undefined
-            updateChat(
-              +uuid,
-              dataSources.value.length - 1,
-              {
-                dateTime: new Date().toLocaleString(),
-                text: lastText + (data.text ?? ''),
-                inversion: false,
-                error: false,
-                loading: true,
-                conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
-                requestOptions: { prompt: message, options: { ...options } },
-                usage,
-              },
-            )
+		try {
+			let lastText = ''
+			const fetchChatAPIOnce = async () => {
+				await fetchChatAPIProcess<Chat.ConversationResponse>({
+					roomId: +uuid,
+					uuid: chatUuid,
+					prompt: message,
+					options,
+					signal: controller.signal,
+					onDownloadProgress: ({event}) => {
+						const xhr = event.target
+						const {responseText} = xhr
+						// Always process the final line
+						const lastIndex = responseText.lastIndexOf('\n', responseText.length - 2)
+						let chunk = responseText
+						if (lastIndex !== -1)
+							chunk = responseText.substring(lastIndex)
+						try {
+							const data = JSON.parse(chunk)
+							const usage = data.detail.usage
+								? {
+									completion_tokens: data.detail.usage.completion_tokens || null,
+									prompt_tokens: data.detail.usage.prompt_tokens || null,
+									total_tokens: data.detail.usage.total_tokens || null,
+									estimated: data.detail.usage.estimated || null,
+								}
+								: undefined
+							updateChat(
+								+uuid,
+								dataSources.value.length - 1,
+								{
+									dateTime: new Date().toLocaleString(),
+									text: lastText + (data.text ?? ''),
+									inversion: false,
+									error: false,
+									loading: true,
+									conversationOptions: {conversationId: data.conversationId, parentMessageId: data.id},
+									requestOptions: {prompt: message, options: {...options}},
+									usage,
+								},
+							)
 
-            if (openLongReply && data.detail && data.detail.choices.length > 0 && data.detail.choices[0].finish_reason === 'length') {
-              options.parentMessageId = data.id
-              lastText = data.text
-              message = ''
-              return fetchChatAPIOnce()
-            }
+							if (openLongReply && data.detail && data.detail.choices.length > 0 && data.detail.choices[0].finish_reason === 'length') {
+								options.parentMessageId = data.id
+								lastText = data.text
+								message = ''
+								return fetchChatAPIOnce()
+							}
 
-            scrollToBottomIfAtBottom()
-          }
-          catch (error) {
-            //
-          }
-        },
-      })
-      updateChatSome(+uuid, dataSources.value.length - 1, { loading: false })
-    }
+							scrollToBottomIfAtBottom()
+						} catch (error) {
+							//
+						}
+					},
+				})
+				updateChatSome(+uuid, dataSources.value.length - 1, {loading: false})
+			}
 
-    await fetchChatAPIOnce()
-  }
-  catch (error: any) {
-    const errorMessage = error?.message ?? t('common.wrong')
+			await fetchChatAPIOnce()
+		} catch (error: any) {
+			const errorMessage = error?.message ?? t('common.wrong')
 
-    if (error.message === 'canceled') {
-      updateChatSome(
-        +uuid,
-        dataSources.value.length - 1,
-        {
-          loading: false,
-        },
-      )
-      scrollToBottomIfAtBottom()
-      return
-    }
+			if (error.message === 'canceled') {
+				updateChatSome(
+					+uuid,
+					dataSources.value.length - 1,
+					{
+						loading: false,
+					},
+				)
+				scrollToBottomIfAtBottom()
+				return
+			}
 
-    const currentChat = getChatByUuidAndIndex(+uuid, dataSources.value.length - 1)
+			const currentChat = getChatByUuidAndIndex(+uuid, dataSources.value.length - 1)
 
-    if (currentChat?.text && currentChat.text !== '') {
-      updateChatSome(
-        +uuid,
-        dataSources.value.length - 1,
-        {
-          text: `${currentChat.text}\n[${errorMessage}]`,
-          error: false,
-          loading: false,
-        },
-      )
-      return
-    }
+			if (currentChat?.text && currentChat.text !== '') {
+				updateChatSome(
+					+uuid,
+					dataSources.value.length - 1,
+					{
+						text: `${currentChat.text}\n[${errorMessage}]`,
+						error: false,
+						loading: false,
+					},
+				)
+				return
+			}
 
-    updateChat(
-      +uuid,
-      dataSources.value.length - 1,
-      {
-        dateTime: new Date().toLocaleString(),
-        text: errorMessage,
-        inversion: false,
-        error: true,
-        loading: false,
-        conversationOptions: null,
-        requestOptions: { prompt: message, options: { ...options } },
-      },
-    )
-    scrollToBottomIfAtBottom()
-  }
-  finally {
-    loading.value = false
-  }
-}
+			updateChat(
+				+uuid,
+				dataSources.value.length - 1,
+				{
+					dateTime: new Date().toLocaleString(),
+					text: errorMessage,
+					inversion: false,
+					error: true,
+					loading: false,
+					conversationOptions: null,
+					requestOptions: {prompt: message, options: {...options}},
+				},
+			)
+			scrollToBottomIfAtBottom()
+		} finally {
+			loading.value = false
+		}
+	}
 
-async function onRegenerate(index: number) {
-  if (loading.value)
-    return
+	async function onRegenerate(index: number) {
+		if (loading.value)
+			return
 
-  controller = new AbortController()
+		controller = new AbortController()
 
-  const { requestOptions } = dataSources.value[index]
+		const {requestOptions} = dataSources.value[index]
 
-  let message = requestOptions?.prompt ?? ''
+		let message = requestOptions?.prompt ?? ''
 
-  let options: Chat.ConversationRequest = {}
+		let options: Chat.ConversationRequest = {}
 
-  if (requestOptions.options)
-    options = { ...requestOptions.options }
+		if (requestOptions.options)
+			options = {...requestOptions.options}
 
-  loading.value = true
-  const chatUuid = dataSources.value[index].uuid
-  updateChat(
-    +uuid,
-    index,
-    {
-      dateTime: new Date().toLocaleString(),
-      text: '',
-      inversion: false,
-      error: false,
-      loading: true,
-      conversationOptions: null,
-      requestOptions: { prompt: message, options: { ...options } },
-    },
-  )
+		loading.value = true
+		const chatUuid = dataSources.value[index].uuid
+		updateChat(
+			+uuid,
+			index,
+			{
+				dateTime: new Date().toLocaleString(),
+				text: '',
+				inversion: false,
+				error: false,
+				loading: true,
+				conversationOptions: null,
+				requestOptions: {prompt: message, options: {...options}},
+			},
+		)
 
-  try {
-    let lastText = ''
-    const fetchChatAPIOnce = async () => {
-      await fetchChatAPIProcess<Chat.ConversationResponse>({
-        roomId: +uuid,
-        uuid: chatUuid || Date.now(),
-        regenerate: true,
-        prompt: message,
-        options,
-        signal: controller.signal,
-        onDownloadProgress: ({ event }) => {
-          const xhr = event.target
-          const { responseText } = xhr
-          // Always process the final line
-          const lastIndex = responseText.lastIndexOf('\n', responseText.length - 2)
-          let chunk = responseText
-          if (lastIndex !== -1)
-            chunk = responseText.substring(lastIndex)
-          try {
-            const data = JSON.parse(chunk)
-            const usage = data.detail.usage
-              ? {
-                  completion_tokens: data.detail.usage.completion_tokens || null,
-                  prompt_tokens: data.detail.usage.prompt_tokens || null,
-                  total_tokens: data.detail.usage.total_tokens || null,
-                  estimated: data.detail.usage.estimated || null,
-                }
-              : undefined
-            updateChat(
-              +uuid,
-              index,
-              {
-                dateTime: new Date().toLocaleString(),
-                text: lastText + (data.text ?? ''),
-                inversion: false,
-                error: false,
-                loading: true,
-                conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
-                requestOptions: { prompt: message, options: { ...options } },
-                usage,
-              },
-            )
+		try {
+			let lastText = ''
+			const fetchChatAPIOnce = async () => {
+				await fetchChatAPIProcess<Chat.ConversationResponse>({
+					roomId: +uuid,
+					uuid: chatUuid || Date.now(),
+					regenerate: true,
+					prompt: message,
+					options,
+					signal: controller.signal,
+					onDownloadProgress: ({event}) => {
+						const xhr = event.target
+						const {responseText} = xhr
+						// Always process the final line
+						const lastIndex = responseText.lastIndexOf('\n', responseText.length - 2)
+						let chunk = responseText
+						if (lastIndex !== -1)
+							chunk = responseText.substring(lastIndex)
+						try {
+							const data = JSON.parse(chunk)
+							const usage = data.detail.usage
+								? {
+									completion_tokens: data.detail.usage.completion_tokens || null,
+									prompt_tokens: data.detail.usage.prompt_tokens || null,
+									total_tokens: data.detail.usage.total_tokens || null,
+									estimated: data.detail.usage.estimated || null,
+								}
+								: undefined
+							updateChat(
+								+uuid,
+								index,
+								{
+									dateTime: new Date().toLocaleString(),
+									text: lastText + (data.text ?? ''),
+									inversion: false,
+									error: false,
+									loading: true,
+									conversationOptions: {conversationId: data.conversationId, parentMessageId: data.id},
+									requestOptions: {prompt: message, options: {...options}},
+									usage,
+								},
+							)
 
-            if (openLongReply && data.detail && data.detail.choices.length > 0 && data.detail.choices[0].finish_reason === 'length') {
-              options.parentMessageId = data.id
-              lastText = data.text
-              message = ''
-              return fetchChatAPIOnce()
-            }
-          }
-          catch (error) {
-            //
-          }
-        },
-      })
-      updateChatSome(+uuid, index, { loading: false })
-    }
-    await fetchChatAPIOnce()
-  }
-  catch (error: any) {
-    if (error.message === 'canceled') {
-      updateChatSome(
-        +uuid,
-        index,
-        {
-          loading: false,
-        },
-      )
-      return
-    }
+							if (openLongReply && data.detail && data.detail.choices.length > 0 && data.detail.choices[0].finish_reason === 'length') {
+								options.parentMessageId = data.id
+								lastText = data.text
+								message = ''
+								return fetchChatAPIOnce()
+							}
+						} catch (error) {
+							//
+						}
+					},
+				})
+				updateChatSome(+uuid, index, {loading: false})
+			}
+			await fetchChatAPIOnce()
+		} catch (error: any) {
+			if (error.message === 'canceled') {
+				updateChatSome(
+					+uuid,
+					index,
+					{
+						loading: false,
+					},
+				)
+				return
+			}
 
-    const errorMessage = error?.message ?? t('common.wrong')
+			const errorMessage = error?.message ?? t('common.wrong')
 
-    updateChat(
-      +uuid,
-      index,
-      {
-        dateTime: new Date().toLocaleString(),
-        text: errorMessage,
-        inversion: false,
-        error: true,
-        loading: false,
-        conversationOptions: null,
-        requestOptions: { prompt: message, options: { ...options } },
-      },
-    )
-  }
-  finally {
-    loading.value = false
-  }
-}
+			updateChat(
+				+uuid,
+				index,
+				{
+					dateTime: new Date().toLocaleString(),
+					text: errorMessage,
+					inversion: false,
+					error: true,
+					loading: false,
+					conversationOptions: null,
+					requestOptions: {prompt: message, options: {...options}},
+				},
+			)
+		} finally {
+			loading.value = false
+		}
+	}
 
-function handleExport() {
-  if (loading.value)
-    return
+	function handleExport() {
+		if (loading.value)
+			return
 
-  const d = dialog.warning({
-    title: t('chat.exportImage'),
-    content: t('chat.exportImageConfirm'),
-    positiveText: t('common.yes'),
-    negativeText: t('common.no'),
-    onPositiveClick: async () => {
-      try {
-        d.loading = true
-        const ele = document.getElementById('image-wrapper')
-        const canvas = await html2canvas(ele as HTMLDivElement, {
-          useCORS: true,
-        })
-        const imgUrl = canvas.toDataURL('image/png')
-        const tempLink = document.createElement('a')
-        tempLink.style.display = 'none'
-        tempLink.href = imgUrl
-        tempLink.setAttribute('download', 'chat-shot.png')
-        if (typeof tempLink.download === 'undefined')
-          tempLink.setAttribute('target', '_blank')
+		const d = dialog.warning({
+			title: t('chat.exportImage'),
+			content: t('chat.exportImageConfirm'),
+			positiveText: t('common.yes'),
+			negativeText: t('common.no'),
+			onPositiveClick: async () => {
+				try {
+					d.loading = true
+					const ele = document.getElementById('image-wrapper')
+					const canvas = await html2canvas(ele as HTMLDivElement, {
+						useCORS: true,
+					})
+					const imgUrl = canvas.toDataURL('image/png')
+					const tempLink = document.createElement('a')
+					tempLink.style.display = 'none'
+					tempLink.href = imgUrl
+					tempLink.setAttribute('download', 'chat-shot.png')
+					if (typeof tempLink.download === 'undefined')
+						tempLink.setAttribute('target', '_blank')
 
-        document.body.appendChild(tempLink)
-        tempLink.click()
-        document.body.removeChild(tempLink)
-        window.URL.revokeObjectURL(imgUrl)
-        d.loading = false
-        ms.success(t('chat.exportSuccess'))
-        Promise.resolve()
-      }
-      catch (error: any) {
-        ms.error(t('chat.exportFailed'))
-      }
-      finally {
-        d.loading = false
-      }
-    },
-  })
-}
+					document.body.appendChild(tempLink)
+					tempLink.click()
+					document.body.removeChild(tempLink)
+					window.URL.revokeObjectURL(imgUrl)
+					d.loading = false
+					ms.success(t('chat.exportSuccess'))
+					Promise.resolve()
+				} catch (error: any) {
+					ms.error(t('chat.exportFailed'))
+				} finally {
+					d.loading = false
+				}
+			},
+		})
+	}
 
-function handleDelete(index: number) {
-  if (loading.value)
-    return
+	function handleDelete(index: number) {
+		if (loading.value)
+			return
 
-  dialog.warning({
-    title: t('chat.deleteMessage'),
-    content: t('chat.deleteMessageConfirm'),
-    positiveText: t('common.yes'),
-    negativeText: t('common.no'),
-    onPositiveClick: () => {
-      chatStore.deleteChatByUuid(+uuid, index)
-    },
-  })
-}
+		dialog.warning({
+			title: t('chat.deleteMessage'),
+			content: t('chat.deleteMessageConfirm'),
+			positiveText: t('common.yes'),
+			negativeText: t('common.no'),
+			onPositiveClick: () => {
+				chatStore.deleteChatByUuid(+uuid, index)
+			},
+		})
+	}
 
-function handleClear() {
-  if (loading.value)
-    return
+	function handleClear() {
+		if (loading.value)
+			return
 
-  dialog.warning({
-    title: t('chat.clearChat'),
-    content: t('chat.clearChatConfirm'),
-    positiveText: t('common.yes'),
-    negativeText: t('common.no'),
-    onPositiveClick: () => {
-      chatStore.clearChatByUuid(+uuid)
-    },
-  })
-}
+		dialog.warning({
+			title: t('chat.clearChat'),
+			content: t('chat.clearChatConfirm'),
+			positiveText: t('common.yes'),
+			negativeText: t('common.no'),
+			onPositiveClick: () => {
+				chatStore.clearChatByUuid(+uuid)
+			},
+		})
+	}
 
-function handleEnter(event: KeyboardEvent) {
-  if (!isMobile.value) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault()
-      handleSubmit()
-    }
-  }
-  else {
-    if (event.key === 'Enter' && event.ctrlKey) {
-      event.preventDefault()
-      handleSubmit()
-    }
-  }
-}
+	function handleEnter(event: KeyboardEvent) {
+		if (!isMobile.value) {
+			if (event.key === 'Enter' && !event.shiftKey) {
+				event.preventDefault()
+				handleSubmit()
+			}
+		} else {
+			if (event.key === 'Enter' && event.ctrlKey) {
+				event.preventDefault()
+				handleSubmit()
+			}
+		}
+	}
 
-function handleStop() {
-  if (loading.value) {
-    controller.abort()
-    loading.value = false
-  }
-}
+	function handleStop() {
+		if (loading.value) {
+			controller.abort()
+			loading.value = false
+		}
+	}
 
-async function loadMoreMessage(event: any) {
-  const chatIndex = chatStore.chat.findIndex(d => d.uuid === +uuid)
-  if (chatIndex <= -1)
-    return
+	async function loadMoreMessage(event: any) {
+		const chatIndex = chatStore.chat.findIndex(d => d.uuid === +uuid)
+		if (chatIndex <= -1)
+			return
 
-  const scrollPosition = event.target.scrollHeight - event.target.scrollTop
+		const scrollPosition = event.target.scrollHeight - event.target.scrollTop
 
-  const lastId = chatStore.chat[chatIndex].data[0].uuid
-  await chatStore.syncChat({ uuid: +uuid } as Chat.History, lastId, () => {
-    loadingms && loadingms.destroy()
-    nextTick(() => scrollTo(event.target.scrollHeight - scrollPosition))
-  }, () => {
-    loadingms = ms.loading(
-      '加载中...', {
-        duration: 0,
-      },
-    )
-  }, () => {
-    allmsg && allmsg.destroy()
-    allmsg = ms.warning('没有更多了', {
-      duration: 1000,
-    })
-  })
-}
+		const lastId = chatStore.chat[chatIndex].data[0].uuid
+		await chatStore.syncChat({uuid: +uuid} as Chat.History, lastId, () => {
+			loadingms && loadingms.destroy()
+			nextTick(() => scrollTo(event.target.scrollHeight - scrollPosition))
+		}, () => {
+			loadingms = ms.loading(
+				'加载中...', {
+					duration: 0,
+				},
+			)
+		}, () => {
+			allmsg && allmsg.destroy()
+			allmsg = ms.warning('没有更多了', {
+				duration: 1000,
+			})
+		})
+	}
 
-const handleLoadMoreMessage = debounce(loadMoreMessage, 300)
+	const handleLoadMoreMessage = debounce(loadMoreMessage, 300)
 
-async function handleScroll(event: any) {
-  const scrollTop = event.target.scrollTop
-  if (scrollTop < 50 && (scrollTop < prevScrollTop || prevScrollTop === undefined))
-    handleLoadMoreMessage(event)
-  prevScrollTop = scrollTop
-}
+	async function handleScroll(event: any) {
+		const scrollTop = event.target.scrollTop
+		if (scrollTop < 50 && (scrollTop < prevScrollTop || prevScrollTop === undefined))
+			handleLoadMoreMessage(event)
+		prevScrollTop = scrollTop
+	}
 
-// 可优化部分
-// 搜索选项计算，这里使用value作为索引项，所以当出现重复value时渲染异常(多项同时出现选中效果)
-// 理想状态下其实应该是key作为索引项,但官方的renderOption会出现问题，所以就需要value反renderLabel实现
-const searchOptions = computed(() => {
-  if (prompt.value.startsWith('/')) {
-    return promptTemplate.value.filter((item: { key: string }) => item.key.toLowerCase().includes(prompt.value.substring(1).toLowerCase())).map((obj: { value: any }) => {
-      return {
-        label: obj.value,
-        value: obj.value,
-      }
-    })
-  }
-  else {
-    return []
-  }
-})
+	// 可优化部分
+	// 搜索选项计算，这里使用value作为索引项，所以当出现重复value时渲染异常(多项同时出现选中效果)
+	// 理想状态下其实应该是key作为索引项,但官方的renderOption会出现问题，所以就需要value反renderLabel实现
+	const searchOptions = computed(() => {
+		if (prompt.value.startsWith('/')) {
+			return promptTemplate.value.filter((item: { key: string }) => item.key.toLowerCase().includes(prompt.value.substring(1).toLowerCase())).map((obj: { value: any }) => {
+				return {
+					label: obj.value,
+					value: obj.value,
+				}
+			})
+		} else {
+			return []
+		}
+	})
 
-// value反渲染key
-const renderOption = (option: { label: string }) => {
-  for (const i of promptTemplate.value) {
-    if (i.value === option.label)
-      return [i.key]
-  }
-  return []
-}
+	// value反渲染key
+	const renderOption = (option: { label: string }) => {
+		for (const i of promptTemplate.value) {
+			if (i.value === option.label)
+				return [i.key]
+		}
+		return []
+	}
 
-const placeholder = computed(() => {
-  if (isMobile.value)
-    return t('chat.placeholderMobile')
-  return t('chat.placeholder')
-})
+	const placeholder = computed(() => {
+		if (isMobile.value)
+			return t('chat.placeholderMobile')
+		return t('chat.placeholder')
+	})
 
-const buttonDisabled = computed(() => {
-  return loading.value || !prompt.value || prompt.value.trim() === ''
-})
+	const buttonDisabled = computed(() => {
+		return loading.value || !prompt.value || prompt.value.trim() === ''
+	})
 
-const footerClass = computed(() => {
-  let classes = ['p-4']
-  if (isMobile.value)
-    classes = ['sticky', 'left-0', 'bottom-0', 'right-0', 'p-2', 'pr-3', 'overflow-hidden']
-  return classes
-})
+	const footerClass = computed(() => {
+		let classes = ['p-4']
+		if (isMobile.value)
+			classes = ['sticky', 'left-0', 'bottom-0', 'right-0', 'p-2', 'pr-3', 'overflow-hidden']
+		return classes
+	})
 
-onMounted(() => {
-  firstLoading.value = true
-  debounce(() => {
-    // 直接刷 极小概率不请求
-    chatStore.syncChat({ uuid: Number(uuid) } as Chat.History, undefined, () => {
-      firstLoading.value = false
-      scrollToBottom()
-      if (inputRef.value && !isMobile.value)
-        inputRef.value?.focus()
-    })
-  }, 200)()
-})
+	onMounted(() => {
+		firstLoading.value = true
+		debounce(() => {
+			// 直接刷 极小概率不请求
+			chatStore.syncChat({uuid: Number(uuid)} as Chat.History, undefined, () => {
+				firstLoading.value = false
+				scrollToBottom()
+				if (inputRef.value && !isMobile.value)
+					inputRef.value?.focus()
+			})
+		}, 200)()
+	})
 
-onUnmounted(() => {
-  if (loading.value)
-    controller.abort()
-})
+	onUnmounted(() => {
+		if (loading.value)
+			controller.abort()
+	})
 </script>
+<style>
+	.title {
+		font-weight: 600;
+		margin-bottom: 60px;
+		font-size: 40px;
+		text-align: center
+	}
 
+	.div {
+		display: flex;
+		align-items: flex-start;
+		text-align: center;
+		padding: 0 20px;
+	}
+
+	.div-mobile {
+		align-items: flex-start;
+		text-align: center;
+		padding: 0 20px;
+	}
+
+	.div-mobile-icon {
+		display: inline-block;
+	}
+
+	.div > div {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 0%;
+		gap: 12px;
+		margin-right: 12px;
+	}
+
+	.div > div > div {
+		margin: 0;
+		padding: 0
+	}
+
+	.div > div > div > div {
+		border-radius: 3px;
+		position: relative;
+		display: inline-block;
+		overflow: hidden;
+	}
+
+	.h2title {
+		font-weight: 400;
+		font-size: 16px;
+		line-height: 24px;
+		margin: 0;
+	}
+
+	.h2ul > li {
+		width: 100%;
+		cursor: pointer;
+		font-size: 16px;
+		border-radius: 3px;
+		padding: 10px;
+		margin-bottom: 12px;
+		background-color: #f7f7f8;
+	}
+
+	.h2ul > li:hover {
+		background-color: #67c23a;
+		color: #fff;
+	}
+</style>
 <template>
-  <div class="flex flex-col w-full h-full">
-    <HeaderComponent
-      v-if="isMobile"
-      :using-context="usingContext"
-      @export="handleExport"
-      @toggle-using-context="toggleUsingContext"
-    />
-    <main class="flex-1 overflow-hidden">
-      <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto" @scroll="handleScroll">
-        <div
-          id="image-wrapper"
-          class="w-full max-w-screen-xl m-auto dark:bg-[#101014]"
-          :class="[isMobile ? 'p-2' : 'p-4']"
-        >
-          <NSpin :show="firstLoading">
-            <template v-if="!dataSources.length">
-              <div class="flex items-center justify-center mt-4 text-center text-neutral-300">
-                <SvgIcon icon="ri:bubble-chart-fill" class="mr-2 text-3xl" />
-                <span>Aha~</span>
-              </div>
-            </template>
-            <template v-else>
-              <div>
-                <Message
-                  v-for="(item, index) of dataSources"
-                  :key="index"
-                  :date-time="item.dateTime"
-                  :text="item.text"
-                  :inversion="item.inversion"
-                  :usage="item.usage || undefined"
-                  :error="item.error"
-                  :loading="item.loading"
-                  @regenerate="onRegenerate(index)"
-                  @delete="handleDelete(index)"
-                />
-                <div class="sticky bottom-0 left-0 flex justify-center">
-                  <NButton v-if="loading" type="warning" @click="handleStop">
-                    <template #icon>
-                      <SvgIcon icon="ri:stop-circle-line" />
-                    </template>
-                    Stop Responding
-                  </NButton>
-                </div>
-              </div>
-            </template>
-          </NSpin>
-        </div>
-      </div>
-    </main>
-    <footer :class="footerClass">
-      <div class="w-full max-w-screen-xl m-auto">
-        <div class="flex items-center justify-between space-x-2">
-          <HoverButton @click="handleClear">
+	<div class="flex flex-col w-full h-full">
+		<HeaderComponent
+			v-if="isMobile"
+			:using-context="usingContext"
+			@export="handleExport"
+			@toggle-using-context="toggleUsingContext"
+		/>
+		<main class="flex-1 overflow-hidden">
+			<div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto" @scroll="handleScroll">
+				<div
+					id="image-wrapper"
+					class="w-full max-w-screen-xl m-auto dark:bg-[#101014]"
+					:class="[isMobile ? 'p-2' : 'p-4']"
+				>
+					<NSpin :show="firstLoading">
+						<template v-if="!dataSources.length">
+
+							<h1 class="title">Chat AI</h1>
+							<div :class="[isMobile ? 'div-mobile' : 'div']">
+								<div>
+									<div :class="[isMobile ? 'div-mobile-icon' : '']">
+										<div>
+											<img src="https://openai123.bj.bcebos.com/%E5%88%9B%E4%BD%9C.png" width="24" height="24">
+										</div>
+									</div>
+									<h2 class="h2title">AI创作</h2>
+									<ul class="h2ul">
+										<li>
+											<div>写一首赞美祖国的诗，50字以上 →</div>
+										</li>
+										<li>
+											<div>写一篇在线聊天通信的产品策划 →</div>
+										</li>
+										<li>
+											<div>写一篇境外电商平台的活动策划 →</div>
+										</li>
+									</ul>
+								</div>
+								<div>
+									<div :class="[isMobile ? 'div-mobile-icon' : '']">
+										<div>
+											<img src="https://openai123.bj.bcebos.com/%E6%9C%89%E8%B6%A3.png" width="24" height="24">
+										</div>
+									</div>
+									<h2 class="h2title">有趣的问题</h2>
+									<ul class="h2ul">
+										<li>
+											<div>我和猫咪的关系是否是奴役关系 →</div>
+										</li>
+										<li>
+											<div>人死了真的有下一世吗 →</div>
+										</li>
+										<li>
+											<div>相由心生有没有科学道理 →</div>
+										</li>
+									</ul>
+								</div>
+								<div>
+									<div :class="[isMobile ? 'div-mobile-icon' : '']">
+										<div>
+											<img src="https://openai123.bj.bcebos.com/%E7%99%BE%E7%A7%91.png" width="24" height="24">
+										</div>
+									</div>
+									<h2 class="h2title">AI百科</h2>
+									<ul class="h2ul">
+										<li>
+											<div>智齿必须拔掉吗 →</div>
+										</li>
+										<li>
+											<div>糖醋里脊的做法 →</div>
+										</li>
+										<li>
+											<div>什么姓氏历史上没出现过名人 →</div>
+										</li>
+									</ul>
+								</div>
+								<div>
+									<div :class="[isMobile ? 'div-mobile-icon' : '']">
+										<div>
+											<img src="https://openai123.bj.bcebos.com/%E7%81%B5%E6%84%9F.png" width="24" height="24">
+										</div>
+									</div>
+									<h2 class="h2title">AI预测</h2>
+									<ul class="h2ul">
+										<li>
+											<div>未来热门的行业和职业 →</div>
+										</li>
+										<li>
+											<div>下一个球王会是谁 →</div>
+										</li>
+										<li>
+											<div>未来城市的设计和建设 →</div>
+										</li>
+									</ul>
+								</div>
+							</div>
+						</template>
+						<template v-else>
+							<div>
+								<Message
+									v-for="(item, index) of dataSources" :key="index" :date-time="item.dateTime" :text="item.text"
+									:inversion="item.inversion" :usage="item.usage || undefined" :error="item.error"
+									:loading="item.loading" @regenerate="onRegenerate(index)" @delete="handleDelete(index)"
+								/>
+								<div class="sticky bottom-0 left-0 flex justify-center">
+									<NButton v-if="loading" type="warning" @click="handleStop">
+										<template #icon>
+											<SvgIcon icon="ri:stop-circle-line"/>
+										</template>
+										Stop Responding
+									</NButton>
+								</div>
+							</div>
+						</template>
+					</NSpin>
+				</div>
+			</div>
+		</main>
+		<footer :class="footerClass">
+			<div class="w-full max-w-screen-xl m-auto">
+				<div class="flex items-center justify-between space-x-2">
+					<HoverButton @click="handleClear">
             <span class="text-xl text-[#4f555e] dark:text-white">
-              <SvgIcon icon="ri:delete-bin-line" />
+              <SvgIcon icon="ri:delete-bin-line"/>
             </span>
-          </HoverButton>
-          <HoverButton v-if="!isMobile" @click="handleExport">
+					</HoverButton>
+					<HoverButton v-if="!isMobile" @click="handleExport">
             <span class="text-xl text-[#4f555e] dark:text-white">
-              <SvgIcon icon="ri:download-2-line" />
+              <SvgIcon icon="ri:download-2-line"/>
             </span>
-          </HoverButton>
-          <HoverButton v-if="!isMobile" @click="toggleUsingContext">
+					</HoverButton>
+					<HoverButton v-if="!isMobile" @click="toggleUsingContext">
             <span class="text-xl" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }">
-              <SvgIcon icon="ri:chat-history-line" />
+              <SvgIcon icon="ri:chat-history-line"/>
             </span>
-          </HoverButton>
-          <NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
-            <template #default="{ handleInput, handleBlur, handleFocus }">
-              <NInput
-                ref="inputRef"
-                v-model:value="prompt"
-                :disabled="authStore.token === undefined"
-                type="textarea"
-                :placeholder="placeholder"
-                :autosize="{ minRows: 1, maxRows: isMobile ? 4 : 8 }"
-                @input="handleInput"
-                @focus="handleFocus"
-                @blur="handleBlur"
-                @keypress="handleEnter"
-              />
-            </template>
-          </NAutoComplete>
-          <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
-            <template #icon>
+					</HoverButton>
+					<NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
+						<template #default="{ handleInput, handleBlur, handleFocus }">
+							<NInput
+								ref="inputRef"
+								v-model:value="prompt"
+								:disabled="authStore.token === undefined"
+								type="textarea"
+								:placeholder="placeholder"
+								:autosize="{ minRows: 1, maxRows: isMobile ? 4 : 8 }"
+								@input="handleInput"
+								@focus="handleFocus"
+								@blur="handleBlur"
+								@keypress="handleEnter"
+							/>
+						</template>
+					</NAutoComplete>
+					<NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
+						<template #icon>
               <span class="dark:text-black">
-                <SvgIcon icon="ri:send-plane-fill" />
+                <SvgIcon icon="ri:send-plane-fill"/>
               </span>
-            </template>
-          </NButton>
-        </div>
-      </div>
-    </footer>
-  </div>
+						</template>
+					</NButton>
+				</div>
+			</div>
+		</footer>
+	</div>
 </template>
