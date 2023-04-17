@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { NButton, NInput, NSlider, useMessage } from 'naive-ui'
-import { useSettingStore,useUserStore } from '@/store'
+import { useSettingStore, useUserStore } from '@/store'
 import type { SettingsState } from '@/store/modules/settings/helper'
 import { t } from '@/locales'
 
@@ -30,7 +30,7 @@ function handleReset() {
 
 <template>
   <div class="p-4 space-y-5 min-h-[200px]">
-    <div class="space-y-6" v-if="userStore.userInfo.root">
+    <div v-if="userStore.userInfo.root" class="space-y-6">
       <div class="flex items-center space-x-4">
         <span class="flex-shrink-0 w-[120px]">{{ $t('setting.role') }}</span>
         <div class="flex-1">
@@ -66,22 +66,22 @@ function handleReset() {
           {{ $t('common.reset') }}
         </NButton>
       </div>
-			<div class="space-y-6" >
-				<div class="flex items-center space-x-4">
-					<span class="flex-shrink-0 w-[100px]">{{ $t('setting.CanTalkNum') }}</span>
-					<div class="flex-1">
-						- / -
-					</div>
-				</div>
-			</div>
-			<div class="space-y-6" >
-				<div class="flex items-center space-x-4">
-					<span class="flex-shrink-0 w-[100px]">{{ $t('setting.VipExpireTime') }}</span>
-					<div class="flex-1">
-						永久有效
-					</div>
-				</div>
-			</div>
+      <div class="space-y-6">
+        <div class="flex items-center space-x-4">
+          <span class="flex-shrink-0 w-[100px]">{{ $t('setting.CanTalkNum') }}</span>
+          <div class="flex-1">
+            - / -
+          </div>
+        </div>
+      </div>
+      <div class="space-y-6">
+        <div class="flex items-center space-x-4">
+          <span class="flex-shrink-0 w-[100px]">{{ $t('setting.VipExpireTime') }}</span>
+          <div class="flex-1">
+            永久有效
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

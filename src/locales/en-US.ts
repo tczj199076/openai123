@@ -115,9 +115,9 @@ export default {
     auditBaiduLabelLink: 'Goto Label Detail',
     auditCustomizeEnabled: 'Customize',
     auditCustomizeWords: 'Sensitive Words',
-		ExplainConfig: 'Explain Config',
-		CanTalkNum: 'Can Talk Num',
-		VipExpireTime: 'Vip Expire Time',
+    ExplainConfig: 'Explain Config',
+    CanTalkNum: 'Can Talk Num',
+    VipExpireTime: 'Vip Expire Time',
   },
   store: {
     siderButton: 'Prompt Store',
