@@ -115,6 +115,7 @@ export default {
     auditBaiduLabelLink: '查看细分类型',
     auditCustomizeEnabled: '自定义',
     auditCustomizeWords: '敏感词',
+		ExplainConfig: '免责声明',
   },
   store: {
     siderButton: '提示词商店',

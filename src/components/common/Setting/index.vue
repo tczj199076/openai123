@@ -7,6 +7,7 @@ import About from './About.vue'
 import Site from './Site.vue'
 import Mail from './Mail.vue'
 import Audit from './Audit.vue'
+import Explain from './Explain.vue'
 import { SvgIcon } from '@/components/common'
 import { useAuthStore, useUserStore } from '@/store'
 
@@ -89,6 +90,14 @@ const show = computed({
           </template>
           <Audit />
         </NTabPane>
+				<!-- 免责声明 -->
+				<NTabPane name="Explain" tab="Explain">
+					<template #tab>
+						<SvgIcon class="text-lg" icon="ri:line-line" />
+						<span class="ml-2">{{ $t('setting.ExplainConfig') }}</span>
+					</template>
+					<Explain />
+				</NTabPane>
       </NTabs>
     </div>
   </NModal>

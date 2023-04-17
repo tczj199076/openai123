@@ -115,6 +115,7 @@ export default {
     auditBaiduLabelLink: 'Goto Label Detail',
     auditCustomizeEnabled: 'Customize',
     auditCustomizeWords: 'Sensitive Words',
+		ExplainConfig: '免责声明',
   },
   store: {
     siderButton: 'Prompt Store',
