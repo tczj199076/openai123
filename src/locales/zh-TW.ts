@@ -116,6 +116,8 @@ export default {
     auditCustomizeEnabled: '自定义',
     auditCustomizeWords: '敏感词',
 		ExplainConfig: '免责声明',
+		CanTalkNum: '当日聊天次数',
+		VipExpireTime: 'VIP过期时间',
   },
   store: {
     siderButton: '提示詞商店',
