@@ -54,7 +54,7 @@ export default {
     turnOffContext: '当前模式下, 发送消息不会携带之前的聊天记录',
     deleteMessage: '删除消息',
     deleteMessageConfirm: '是否删除此消息?聊天记录将无法恢复！',
-    deleteHistoryConfirm: '确定删除此记录?聊天记录将无法恢复！',
+    deleteHistoryConfirm: '删除窗口后，该窗口内的聊天记录也会一并删除，是否确定删除？',
     clearHistoryConfirm: '确定清空聊天记录?聊天记录将无法恢复！',
     preview: '预览',
     showRawText: '显示原文',
