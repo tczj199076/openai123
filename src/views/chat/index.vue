@@ -542,6 +542,18 @@ onUnmounted(() => {
   if (loading.value)
     controller.abort()
 })
+
+function copyText(event: MouseEvent): void {
+  const liEl = (event.target as HTMLElement).closest('li')
+  if (!liEl)
+    return // 如果没有找到li元素，则直接返回
+
+  const divEl = liEl.querySelector('div')
+  if (!divEl)
+    return // 如果没有找到div元素，则直接返回
+  const textContent = divEl.textContent?.slice(0, -2) ?? ''
+  prompt.value = textContent
+}
 </script>
 
 <template>
@@ -576,13 +588,13 @@ onUnmounted(() => {
                     AI创作
                   </h2>
                   <ul class="h2ul">
-                    <li>
+                    <li @click="copyText">
                       <div>写一首赞美祖国的诗，50字以上 →</div>
                     </li>
-                    <li>
+                    <li @click="copyText">
                       <div>写一篇在线聊天通信的产品策划 →</div>
                     </li>
-                    <li>
+                    <li @click="copyText">
                       <div>写一篇境外电商平台的活动策划 →</div>
                     </li>
                   </ul>
@@ -597,13 +609,13 @@ onUnmounted(() => {
                     有趣的问题
                   </h2>
                   <ul class="h2ul">
-                    <li>
+                    <li @click="copyText">
                       <div>我和猫咪的关系是否是奴役关系 →</div>
                     </li>
-                    <li>
+                    <li @click="copyText">
                       <div>人死了真的有下一世吗 →</div>
                     </li>
-                    <li>
+                    <li @click="copyText">
                       <div>相由心生有没有科学道理 →</div>
                     </li>
                   </ul>
@@ -618,13 +630,13 @@ onUnmounted(() => {
                     AI百科
                   </h2>
                   <ul class="h2ul">
-                    <li>
+                    <li @click="copyText">
                       <div>智齿必须拔掉吗 →</div>
                     </li>
-                    <li>
+                    <li @click="copyText">
                       <div>糖醋里脊的做法 →</div>
                     </li>
-                    <li>
+                    <li @click="copyText">
                       <div>什么姓氏历史上没出现过名人 →</div>
                     </li>
                   </ul>
@@ -639,13 +651,13 @@ onUnmounted(() => {
                     AI预测
                   </h2>
                   <ul class="h2ul">
-                    <li>
+                    <li @click="copyText">
                       <div>未来热门的行业和职业 →</div>
                     </li>
-                    <li>
+                    <li @click="copyText">
                       <div>下一个球王会是谁 →</div>
                     </li>
-                    <li>
+                    <li @click="copyText">
                       <div>未来城市的设计和建设 →</div>
                     </li>
                   </ul>
