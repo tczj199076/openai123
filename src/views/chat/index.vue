@@ -49,6 +49,7 @@ const firstLoading = ref<boolean>(false)
 const loading = ref<boolean>(false)
 const inputRef = ref<Ref | null>(null)
 const showPrompt = ref(false)
+const hasLogin = ref<boolean>(false)
 
 let loadingms: MessageReactive
 let allmsg: MessageReactive
@@ -526,6 +527,8 @@ const footerClass = computed(() => {
 })
 
 onMounted(() => {
+  if (localStorage.getItem('SECRET_TOKEN'))
+    hasLogin.value = true
   firstLoading.value = true
   debounce(() => {
     // 直接刷 极小概率不请求
@@ -557,191 +560,194 @@ function copyText(event: MouseEvent): void {
 </script>
 
 <template>
-  <div class="flex flex-col w-full h-full">
-    <HeaderComponent
-      v-if="isMobile"
-      :using-context="usingContext"
-      :show-prompt="showPrompt"
-      @export="handleExport" @toggle-using-context="toggleUsingContext"
-      @toggle-show-prompt="showPrompt = true"
-    />
-    <main class="flex-1 overflow-hidden">
-      <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto" @scroll="handleScroll">
-        <div
-          id="image-wrapper"
-          class="w-full max-w-screen-xl m-auto dark:bg-[#101014]"
-          :class="[isMobile ? 'p-2' : 'p-4']"
-        >
-          <NSpin :show="firstLoading">
-            <template v-if="!dataSources.length">
-              <h1 class="title">
-                Chat AI
-              </h1>
-              <div :class="[isMobile ? 'div-mobile' : 'div']">
-                <div>
-                  <div :class="[isMobile ? 'div-mobile-icon' : '']">
-                    <div>
-                      <img src="https://openai123.bj.bcebos.com/%E5%88%9B%E4%BD%9C.png" width="24" height="24">
+  <div style="width:100%;height:100%">
+    <div v-if="hasLogin" class="flex flex-col w-full h-full">
+      <HeaderComponent
+        v-if="isMobile"
+        :using-context="usingContext"
+        :show-prompt="showPrompt"
+        @export="handleExport" @toggle-using-context="toggleUsingContext"
+        @toggle-show-prompt="showPrompt = true"
+      />
+      <main class="flex-1 overflow-hidden">
+        <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto" @scroll="handleScroll">
+          <div
+            id="image-wrapper"
+            class="w-full max-w-screen-xl m-auto dark:bg-[#101014]"
+            :class="[isMobile ? 'p-2' : 'p-4']"
+          >
+            <NSpin :show="firstLoading">
+              <template v-if="!dataSources.length">
+                <h1 class="title">
+                  Deep Thinker
+                </h1>
+                <div :class="[isMobile ? 'div-mobile' : 'div']">
+                  <div>
+                    <div :class="[isMobile ? 'div-mobile-icon' : '']">
+                      <div>
+                        <img src="https://openai123.bj.bcebos.com/%E5%88%9B%E4%BD%9C.png" width="24" height="24">
+                      </div>
                     </div>
+                    <h2 class="h2title">
+                      AI创作
+                    </h2>
+                    <ul class="h2ul">
+                      <li @click="copyText">
+                        <div>写一首赞美祖国的诗，50字以上 →</div>
+                      </li>
+                      <li @click="copyText">
+                        <div>写一篇在线聊天通信的产品策划 →</div>
+                      </li>
+                      <li @click="copyText">
+                        <div>写一篇境外电商平台的活动策划 →</div>
+                      </li>
+                    </ul>
                   </div>
-                  <h2 class="h2title">
-                    AI创作
-                  </h2>
-                  <ul class="h2ul">
-                    <li @click="copyText">
-                      <div>写一首赞美祖国的诗，50字以上 →</div>
-                    </li>
-                    <li @click="copyText">
-                      <div>写一篇在线聊天通信的产品策划 →</div>
-                    </li>
-                    <li @click="copyText">
-                      <div>写一篇境外电商平台的活动策划 →</div>
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <div :class="[isMobile ? 'div-mobile-icon' : '']">
-                    <div>
-                      <img src="https://openai123.bj.bcebos.com/%E6%9C%89%E8%B6%A3.png" width="24" height="24">
+                  <div>
+                    <div :class="[isMobile ? 'div-mobile-icon' : '']">
+                      <div>
+                        <img src="https://openai123.bj.bcebos.com/%E6%9C%89%E8%B6%A3.png" width="24" height="24">
+                      </div>
                     </div>
+                    <h2 class="h2title">
+                      有趣的问题
+                    </h2>
+                    <ul class="h2ul">
+                      <li @click="copyText">
+                        <div>我和猫咪的关系是否是奴役关系 →</div>
+                      </li>
+                      <li @click="copyText">
+                        <div>人死了真的有下一世吗 →</div>
+                      </li>
+                      <li @click="copyText">
+                        <div>相由心生有没有科学道理 →</div>
+                      </li>
+                    </ul>
                   </div>
-                  <h2 class="h2title">
-                    有趣的问题
-                  </h2>
-                  <ul class="h2ul">
-                    <li @click="copyText">
-                      <div>我和猫咪的关系是否是奴役关系 →</div>
-                    </li>
-                    <li @click="copyText">
-                      <div>人死了真的有下一世吗 →</div>
-                    </li>
-                    <li @click="copyText">
-                      <div>相由心生有没有科学道理 →</div>
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <div :class="[isMobile ? 'div-mobile-icon' : '']">
-                    <div>
-                      <img src="https://openai123.bj.bcebos.com/%E7%99%BE%E7%A7%91.png" width="24" height="24">
+                  <div>
+                    <div :class="[isMobile ? 'div-mobile-icon' : '']">
+                      <div>
+                        <img src="https://openai123.bj.bcebos.com/%E7%99%BE%E7%A7%91.png" width="24" height="24">
+                      </div>
                     </div>
+                    <h2 class="h2title">
+                      AI百科
+                    </h2>
+                    <ul class="h2ul">
+                      <li @click="copyText">
+                        <div>智齿必须拔掉吗 →</div>
+                      </li>
+                      <li @click="copyText">
+                        <div>糖醋里脊的做法 →</div>
+                      </li>
+                      <li @click="copyText">
+                        <div>什么姓氏历史上没出现过名人 →</div>
+                      </li>
+                    </ul>
                   </div>
-                  <h2 class="h2title">
-                    AI百科
-                  </h2>
-                  <ul class="h2ul">
-                    <li @click="copyText">
-                      <div>智齿必须拔掉吗 →</div>
-                    </li>
-                    <li @click="copyText">
-                      <div>糖醋里脊的做法 →</div>
-                    </li>
-                    <li @click="copyText">
-                      <div>什么姓氏历史上没出现过名人 →</div>
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <div :class="[isMobile ? 'div-mobile-icon' : '']">
-                    <div>
-                      <img src="https://openai123.bj.bcebos.com/%E7%81%B5%E6%84%9F.png" width="24" height="24">
+                  <div>
+                    <div :class="[isMobile ? 'div-mobile-icon' : '']">
+                      <div>
+                        <img src="https://openai123.bj.bcebos.com/%E7%81%B5%E6%84%9F.png" width="24" height="24">
+                      </div>
                     </div>
+                    <h2 class="h2title">
+                      AI预测
+                    </h2>
+                    <ul class="h2ul">
+                      <li @click="copyText">
+                        <div>未来热门的行业和职业 →</div>
+                      </li>
+                      <li @click="copyText">
+                        <div>下一个球王会是谁 →</div>
+                      </li>
+                      <li @click="copyText">
+                        <div>未来城市的设计和建设 →</div>
+                      </li>
+                    </ul>
                   </div>
-                  <h2 class="h2title">
-                    AI预测
-                  </h2>
-                  <ul class="h2ul">
-                    <li @click="copyText">
-                      <div>未来热门的行业和职业 →</div>
-                    </li>
-                    <li @click="copyText">
-                      <div>下一个球王会是谁 →</div>
-                    </li>
-                    <li @click="copyText">
-                      <div>未来城市的设计和建设 →</div>
-                    </li>
-                  </ul>
                 </div>
-              </div>
-            </template>
-            <template v-else>
-              <div>
-                <Message
-                  v-for="(item, index) of dataSources"
-                  :key="index"
-                  :date-time="item.dateTime"
-                  :text="item.text"
-                  :inversion="item.inversion"
-                  :usage="item && item.usage || undefined"
-                  :error="item.error"
-                  :loading="item.loading"
-                  @regenerate="onRegenerate(index)"
-                  @delete="handleDelete(index)"
-                />
-                <div class="sticky bottom-0 left-0 flex justify-center">
-                  <NButton v-if="loading" type="warning" @click="handleStop">
-                    <template #icon>
-                      <SvgIcon icon="ri:stop-circle-line" />
-                    </template>
-                    Stop Responding
-                  </NButton>
+              </template>
+              <template v-else>
+                <div>
+                  <Message
+                    v-for="(item, index) of dataSources"
+                    :key="index"
+                    :date-time="item.dateTime"
+                    :text="item.text"
+                    :inversion="item.inversion"
+                    :usage="item && item.usage || undefined"
+                    :error="item.error"
+                    :loading="item.loading"
+                    @regenerate="onRegenerate(index)"
+                    @delete="handleDelete(index)"
+                  />
+                  <div class="sticky bottom-0 left-0 flex justify-center">
+                    <NButton v-if="loading" type="warning" @click="handleStop">
+                      <template #icon>
+                        <SvgIcon icon="ri:stop-circle-line" />
+                      </template>
+                      Stop Responding
+                    </NButton>
+                  </div>
                 </div>
-              </div>
-            </template>
-          </NSpin>
+              </template>
+            </NSpin>
+          </div>
         </div>
-      </div>
-    </main>
-    <footer :class="footerClass">
-      <div class="w-full max-w-screen-xl m-auto">
-        <div class="flex items-center justify-between space-x-2">
-          <HoverButton @click="handleClear">
-            <span class="text-xl text-[#4f555e] dark:text-white">
-              <SvgIcon icon="ri:delete-bin-line" />
-            </span>
-          </HoverButton>
-          <HoverButton v-if="!isMobile" @click="handleExport">
-            <span class="text-xl text-[#4f555e] dark:text-white">
-              <SvgIcon icon="ri:download-2-line" />
-            </span>
-          </HoverButton>
-          <HoverButton v-if="!isMobile" @click="showPrompt = true">
-            <span class="text-xl text-[#4f555e] dark:text-white">
-              <IconPrompt class="w-[20px] m-auto" />
-            </span>
-          </HoverButton>
-          <HoverButton v-if="!isMobile" @click="toggleUsingContext">
-            <span class="text-xl" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }">
-              <SvgIcon icon="ri:chat-history-line" />
-            </span>
-          </HoverButton>
-          <NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
-            <template #default="{ handleInput, handleBlur, handleFocus }">
-              <NInput
-                ref="inputRef"
-                v-model:value="prompt"
-                :disabled="!!authStore.session?.auth && !authStore.token"
-                type="textarea"
-                :placeholder="placeholder"
-                :autosize="{ minRows: 1, maxRows: isMobile ? 4 : 8 }"
-                @input="handleInput"
-                @focus="handleFocus"
-                @blur="handleBlur"
-                @keypress="handleEnter"
-              />
-            </template>
-          </NAutoComplete>
-          <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
-            <template #icon>
-              <span class="dark:text-black">
-                <SvgIcon icon="ri:send-plane-fill" />
+      </main>
+      <footer :class="footerClass">
+        <div class="w-full max-w-screen-xl m-auto">
+          <div class="flex items-center justify-between space-x-2">
+            <HoverButton @click="handleClear">
+              <span class="text-xl text-[#4f555e] dark:text-white">
+                <SvgIcon icon="ri:delete-bin-line" />
               </span>
-            </template>
-          </NButton>
+            </HoverButton>
+            <HoverButton v-if="!isMobile" @click="handleExport">
+              <span class="text-xl text-[#4f555e] dark:text-white">
+                <SvgIcon icon="ri:download-2-line" />
+              </span>
+            </HoverButton>
+            <HoverButton v-if="!isMobile" @click="showPrompt = true">
+              <span class="text-xl text-[#4f555e] dark:text-white">
+                <IconPrompt class="w-[20px] m-auto" />
+              </span>
+            </HoverButton>
+            <HoverButton v-if="!isMobile" @click="toggleUsingContext">
+              <span class="text-xl" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }">
+                <SvgIcon icon="ri:chat-history-line" />
+              </span>
+            </HoverButton>
+            <NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
+              <template #default="{ handleInput, handleBlur, handleFocus }">
+                <NInput
+                  ref="inputRef"
+                  v-model:value="prompt"
+                  :disabled="!!authStore.session?.auth && !authStore.token"
+                  type="textarea"
+                  :placeholder="placeholder"
+                  :autosize="{ minRows: 1, maxRows: isMobile ? 4 : 8 }"
+                  @input="handleInput"
+                  @focus="handleFocus"
+                  @blur="handleBlur"
+                  @keypress="handleEnter"
+                />
+              </template>
+            </NAutoComplete>
+            <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
+              <template #icon>
+                <span class="dark:text-black">
+                  <SvgIcon icon="ri:send-plane-fill" />
+                </span>
+              </template>
+            </NButton>
+          </div>
         </div>
-      </div>
-    </footer>
-    <Prompt v-if="showPrompt" v-model:roomId="uuid" v-model:visible="showPrompt" />
+      </footer>
+      <Prompt v-if="showPrompt" v-model:roomId="uuid" v-model:visible="showPrompt" />
+    </div>
+    <iframe v-else style="width: 100%;height: 100%" src="https://demo.openai123.vip/" />
   </div>
 </template>
 

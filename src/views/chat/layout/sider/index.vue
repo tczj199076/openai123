@@ -80,10 +80,19 @@ watch(
         <div class="flex-1 min-h-0 pb-4 overflow-hidden">
           <List />
         </div>
-        <div class="p-4">
-          <NButton block @click="show = true">
-            {{ $t('store.siderButton') }}
+        <div class="p-4 " style="display: grid; grid-template-rows: repeat(3, auto); gap: 10px;">
+          <NButton>
+            {{ $t('store.vip') }}
           </NButton>
+          <NButton>
+            {{ $t('store.ucenter') }}
+          </NButton>
+          <NButton>
+            {{ $t('store.help') }}
+          </NButton>
+          <!-- <NButton block @click="show = true">
+            {{ $t('store.siderButton') }}
+          </NButton> -->
         </div>
       </main>
       <Footer />
