@@ -6,14 +6,14 @@ import List from './List.vue'
 import Footer from './Footer.vue'
 import { useAppStore, useAuthStore, useChatStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { PromptStore } from '@/components/common'
+import { Vip } from '@/components/common'
 
 const appStore = useAppStore()
 const authStore = useAuthStore()
 const chatStore = useChatStore()
 
 const { isMobile } = useBasicLayout()
-const show = ref(false)
+const vip = ref(false)
 
 const collapsed = computed(() => appStore.siderCollapsed)
 
@@ -80,19 +80,22 @@ watch(
         <div class="flex-1 min-h-0 pb-4 overflow-hidden">
           <List />
         </div>
-        <div class="p-4 " style="display: grid; grid-template-rows: repeat(3, auto); gap: 10px;">
-          <NButton>
-            {{ $t('store.vip') }}
-          </NButton>
-          <NButton>
-            {{ $t('store.ucenter') }}
-          </NButton>
-          <NButton>
-            {{ $t('store.help') }}
-          </NButton>
-          <!-- <NButton block @click="show = true">
-            {{ $t('store.siderButton') }}
-          </NButton> -->
+        <div>
+          <div v-if="!!authStore.session?.auth && !authStore.token" />
+          <div v-else v-show="authStore.session?.auth" class="p-4 " style="display: grid; grid-template-rows: repeat(3, auto); gap: 10px;">
+            <NButton block @click="vip = true">
+              {{ $t('store.vip') }}
+            </NButton>
+            <NButton>
+              {{ $t('store.ucenter') }}
+            </NButton>
+            <NButton>
+              {{ $t('store.help') }}
+            </NButton>
+            <!-- <NButton block @click="show = true">
+              {{ $t('store.siderButton') }}
+            </NButton> -->
+          </div>
         </div>
       </main>
       <Footer />
@@ -101,5 +104,6 @@ watch(
   <template v-if="isMobile">
     <div v-show="!collapsed" class="fixed inset-0 z-40 bg-black/40" @click="handleUpdateCollapsed" />
   </template>
-  <PromptStore v-model:visible="show" />
+  <!-- <PromptStore v-model:visible="show" /> -->
+  <Vip v-model:visible="vip" />
 </template>
