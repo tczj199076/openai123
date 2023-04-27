@@ -1,7 +1,7 @@
 <script setup lang='ts'>
 import { computed, ref } from 'vue'
 import { NButton, NModal } from 'naive-ui'
-import { useBasicLayout } from '@/hooks/useBasicLayout'
+// import { useBasicLayout } from '@/hooks/useBasicLayout'
 interface Emit {
   (e: 'update:visible', visible: boolean): void
 }
@@ -19,7 +19,7 @@ const vip = computed({
 })
 
 // 移动端自适应相关
-const { isMobile } = useBasicLayout()
+// const { isMobile } = useBasicLayout()
 
 const buy = ref(false)
 </script>
