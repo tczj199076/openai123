@@ -41,10 +41,10 @@ const userInfo = computed(() => userStore.userInfo)
         @click="showPermission = true"
       >
         <span v-if="!!authStore.session?.auth && !authStore.token" class="text-xl text-[#ff69b4] dark:text-white">
-          {{ $t('common.notLoggedIn') }}
+          {{ $t('common.notLoggedIn') }}222
         </span>
         <span v-else class="text-xl text-[#ff69b4] dark:text-white">
-          {{ authStore .session?.title }}
+          232323{{ authStore .session?.title }}
         </span>
       </NButton>
     </div>

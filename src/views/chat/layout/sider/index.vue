@@ -6,7 +6,7 @@ import List from './List.vue'
 import Footer from './Footer.vue'
 import { useAppStore, useAuthStore, useChatStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { Vip } from '@/components/common'
+import { Ucenter, Vip } from '@/components/common'
 
 const appStore = useAppStore()
 const authStore = useAuthStore()
@@ -14,6 +14,7 @@ const chatStore = useChatStore()
 
 const { isMobile } = useBasicLayout()
 const vip = ref(false)
+const ucenter = ref(false)
 
 const collapsed = computed(() => appStore.siderCollapsed)
 
@@ -86,7 +87,7 @@ watch(
             <NButton block @click="vip = true">
               {{ $t('store.vip') }}
             </NButton>
-            <NButton>
+            <NButton block @click="ucenter = true">
               {{ $t('store.ucenter') }}
             </NButton>
             <NButton>
@@ -106,4 +107,5 @@ watch(
   </template>
   <!-- <PromptStore v-model:visible="show" /> -->
   <Vip v-model:visible="vip" />
+  <Ucenter v-model:visible="ucenter" />
 </template>

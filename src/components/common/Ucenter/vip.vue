@@ -47,7 +47,7 @@ const buy = ref(false)
                   <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
                     <li>折合每月5元/月</li>
                     <li>总共20次提问次数</li>
-                    <li>限制1台设备使用</li>
+                    <li>提问次数永不过期</li>
                     <li>24h快速客服响应</li>
                   </ul>
                 </div>
@@ -152,7 +152,30 @@ const buy = ref(false)
               <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
                 <li>折合每月5元/月</li>
                 <li>总共20次提问次数</li>
-                <li>限制1台设备使用</li>
+                <li>提问次数永不过期</li>
+                <li>24h快速客服响应</li>
+              </ul>
+              <NButton block @click="buy = true">
+                {{ $t('store.vip') }}
+              </NButton>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card mb-4 shadow-sm">
+            <div class="card-header">
+              <h4 class="my-0 fw-normal">
+                加量试用套餐
+              </h4>
+            </div>
+            <div class="card-body">
+              <h1 class="card-title pricing-card-title">
+                ￥10 <small class="text-dark">/ 算力包</small>
+              </h1>
+              <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
+                <li>折合每月10元/月</li>
+                <li>总共40次提问次数</li>
+                <li>提问次数永不过期</li>
                 <li>24h快速客服响应</li>
               </ul>
               <NButton block @click="buy = true">
@@ -175,7 +198,7 @@ const buy = ref(false)
               <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
                 <li>折合每月29元/月</li>
                 <li>每月300次提问次数</li>
-                <li>限制1台设备使用</li>
+                <li>有效期一个月</li>
                 <li>24h快速客服响应</li>
               </ul>
               <NButton block>
@@ -193,35 +216,13 @@ const buy = ref(false)
             </div>
             <div class="card-body">
               <h1 class="card-title pricing-card-title">
-                ￥69 <small class="text-dark">/ 季付</small>
+                ￥69 <small class="text-dark">/ 包季</small>
               </h1>
               <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
                 <li>折合每月23元/月</li>
-                <li>每月300次提问次数</li>
-                <li>限制1台设备使用</li>
-                <li>24h快速客服响应</li>
-              </ul>
-              <NButton block>
-                {{ $t('store.vip') }}
-              </NButton>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="card mb-4 shadow-sm">
-            <div class="card-header">
-              <h4 class="my-0 fw-normal">
-                奢华年付套餐
-              </h4>
-            </div>
-            <div class="card-body">
-              <h1 class="card-title pricing-card-title">
-                ￥229 <small class="text-dark">/ 年付</small>
-              </h1>
-              <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
-                <li>折合每月19元/月</li>
-                <li>每月300次提问次数</li>
-                <li>限制1台设备使用</li>
+                <li>每月350次提问次数</li>
+                <li>有效期1个季度</li>
+                <li>当月剩余次数可累计</li>
                 <li>24h快速客服响应</li>
               </ul>
               <NButton block>
@@ -239,12 +240,37 @@ const buy = ref(false)
             </div>
             <div class="card-body">
               <h1 class="card-title pricing-card-title">
-                ￥249 <small class="text-dark">/ 季付</small>
+                ￥249 <small class="text-dark">/ 年付</small>
+              </h1>
+              <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
+                <li>折合每月21元/月</li>
+                <li>每月400次提问次数</li>
+                <li>有效期1年</li>
+                <li>当月剩余次数可累计</li>
+                <li>24h快速客服响应</li>
+              </ul>
+              <NButton block>
+                {{ $t('store.vip') }}
+              </NButton>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card mb-4 shadow-sm">
+            <div class="card-header">
+              <h4 class="my-0 fw-normal">
+                奢华年付套餐
+              </h4>
+            </div>
+            <div class="card-body">
+              <h1 class="card-title pricing-card-title">
+                ￥499 <small class="text-dark">/ 年付</small>
               </h1>
               <ul class="list-unstyled mt-3 mb-4 text-muted">
-                <li>折合约每月21元/月</li>
-                <li>每月400次提问次数</li>
-                <li>限制1台设备使用</li>
+                <li>折合约每月41元/月</li>
+                <li>无限提问次数</li>
+                <li>有效期1年</li>
+                <li>优先AI绘画，gpt4.0</li>
                 <li>24h快速客服响应</li>
               </ul>
               <NButton block>
