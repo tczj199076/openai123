@@ -1,7 +1,18 @@
 import { defineStore } from 'pinia'
+import axios from 'axios'
+import { getToken } from '../auth/helper'
 import { getLocalState, setLocalState } from './helper'
 import { router } from '@/router'
 import { fetchClearChat, fetchCreateChatRoom, fetchDeleteChat, fetchDeleteChatRoom, fetchGetChatHistory, fetchGetChatRooms, fetchRenameChatRoom } from '@/api'
+
+async function fetchGetLoginCount(url: string, params: object): Promise<any> {
+  const response = await axios({
+    method: 'post',
+    url,
+    data: params,
+  })
+  return response.data
+}
 
 export const useChatStore = defineStore('chat-store', {
   state: (): Chat.ChatState => getLocalState(),
@@ -71,9 +82,56 @@ export const useChatStore = defineStore('chat-store', {
         if (chatIndex <= -1 || this.chat[chatIndex].data.length <= 0 || lastId !== undefined) {
           callbackForStartRequest && callbackForStartRequest()
           const chatData = (await fetchGetChatHistory(h.uuid, lastId)).data
+
           if (chatData.length <= 0)
             hisroty.all = true
-
+          // 获取历史记录，然后请求一下接口，并将返回值追加到历史记录里，然后存localstorage，如果已经有storage，怎么不请求，也不添加。
+          // storage只对当天有效。次日登录的时候，判断是否过期，如果过期，则清空storage，并继续请求
+          // 获取登录次数
+          const today = new Date().toLocaleDateString()
+          if (localStorage.getItem('lastLoginDate') !== today)
+            localStorage.removeItem('tmp')
+          let tmp
+          if (!localStorage.getItem('tmp')) {
+            const countResult = await fetchGetLoginCount('https://tp.openai123.vip/index/index/getLoginCount', { token: getToken() })
+            const date = new Date()
+            const formattedDate = date.toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true })
+            if (countResult.data.count === 1) {
+              tmp = {
+                uuid: 1682588796913,
+                dateTime: formattedDate,
+                text: '尊敬的主人，登录成功，我已为你赠送5次提问次数。以后每天登录将固定赠送2次/天。请开始你的提问吧~',
+                inversion: false,
+                error: false,
+                conversationOptions: null,
+                requestOptions: {
+                  prompt: '',
+                  options: null,
+                },
+              }
+              chatData.push(tmp)
+              localStorage.setItem('tmp', JSON.stringify(tmp))
+              localStorage.setItem('lastLoginDate', today)
+            }
+            else {
+              tmp = {
+                uuid: 1682588796913,
+                dateTime: formattedDate,
+                text: '尊敬的主人，登录成功。今天免费为您赠送2次。请开始你的提问吧~',
+                inversion: false,
+                error: false,
+                conversationOptions: null,
+                requestOptions: {
+                  prompt: '',
+                  options: null,
+                },
+              }
+              chatData.push(tmp)
+              localStorage.setItem('tmp', JSON.stringify(tmp))
+              localStorage.setItem('lastLoginDate', today)
+            }
+          }
+          // 结束
           if (chatIndex <= -1)
             this.chat.unshift({ uuid: h.uuid, data: chatData })
           else

@@ -23,7 +23,7 @@ const { isMobile } = useBasicLayout()
 const textRef = ref<HTMLElement>()
 
 const mdi = new MarkdownIt({
-  html: false,
+  html: true, // 原来为false，现在修改为true
   linkify: true,
   highlight(code, language) {
     const validLang = !!(language && hljs.getLanguage(language))

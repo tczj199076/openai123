@@ -11,6 +11,7 @@ import { useScroll } from './hooks/useScroll'
 import { useChat } from './hooks/useChat'
 import { useUsingContext } from './hooks/useUsingContext'
 import HeaderComponent from './components/Header/index.vue'
+
 import { HoverButton, SvgIcon } from '@/components/common'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { useAuthStore, useChatStore, usePromptStore } from '@/store'
@@ -18,6 +19,8 @@ import { fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
 import { debounce } from '@/utils/functions/debounce'
 import IconPrompt from '@/icons/Prompt.vue'
+import { getToken } from '@/store/modules/auth/helper'
+
 const Prompt = defineAsyncComponent(() => import('@/components/common/Setting/Prompt.vue'))
 
 let controller = new AbortController()
@@ -69,6 +72,40 @@ function handleSubmit() {
 }
 
 async function onConversation() {
+  // 开始之前 先请求一下接口，判断一下，如果没次数了，就return
+  const formData = new FormData()
+  formData.append('token', getToken())
+  const response = await fetch('https://tp.openai123.vip/index/chat/chatVerify', {
+    method: 'POST',
+    body: formData,
+  })
+  const userinfo = await response.json()
+  // 这里开始存入localstorage，把次数和vip保存下
+  localStorage.setItem('is_vip', userinfo.data.info.is_vip)
+  if (userinfo.data.code === 0) {
+    if (userinfo.data.info.is_vip === 2)
+      localStorage.setItem('message_count', '-1')
+    else
+      localStorage.setItem('message_count', userinfo.data.info.month_count + userinfo.data.info.tmp_count)
+  }
+  else {
+    localStorage.setItem('message_count', userinfo.data.info.month_count + userinfo.data.info.tmp_count)
+    // 这里直接返回，不请求
+    addChat(
+      +uuid,
+      {
+        dateTime: new Date().toLocaleString(),
+        text: '尊敬的主人，您的试用次数已用完，您可以选择明天登录试用，或者您选择购买订阅支持我~mua<button  style="padding:2px 5px 2px 5px;background:#0d6efd;color:#fff;border-radius:5px" onclick="document.querySelector(\'#buy_vip\').click()" >支持一下</button>',
+        inversion: false,
+        error: false,
+        conversationOptions: null,
+        requestOptions: { prompt: '', options: null },
+      },
+    )
+    scrollToBottom()
+    return
+  }
+  // 结束
   let message = prompt.value
 
   if (loading.value)
@@ -230,6 +267,40 @@ async function onConversation() {
 }
 
 async function onRegenerate(index: number) {
+  // 开始之前 先请求一下接口，判断一下，如果没次数了，就return
+  const formData = new FormData()
+  formData.append('token', getToken())
+  const response = await fetch('https://tp.openai123.vip/index/chat/chatVerify', {
+    method: 'POST',
+    body: formData,
+  })
+  const userinfo = await response.json()
+  // 这里开始存入localstorage，把次数和vip保存下
+  localStorage.setItem('is_vip', userinfo.data.info.is_vip)
+  if (userinfo.data.code === 0) {
+    if (userinfo.data.info.is_vip === 2)
+      localStorage.setItem('message_count', '-1')
+    else
+      localStorage.setItem('message_count', userinfo.data.info.month_count + userinfo.data.info.tmp_count)
+  }
+  else {
+    localStorage.setItem('message_count', userinfo.data.info.month_count + userinfo.data.info.tmp_count)
+    // 这里直接返回，不请求
+    addChat(
+      +uuid,
+      {
+        dateTime: new Date().toLocaleString(),
+        text: '尊敬的主人，您的试用次数已用完，您可以选择明天登录试用，或者您选择购买订阅支持我~mua<button  style="padding:2px 5px 2px 5px;background:#0d6efd;color:#fff;border-radius:5px" onclick="document.querySelector(\'#buy_vip\').click()" >支持一下</button>',
+        inversion: false,
+        error: false,
+        conversationOptions: null,
+        requestOptions: { prompt: '', options: null },
+      },
+    )
+    scrollToBottom()
+    return
+  }
+  // 结束
   if (loading.value)
     return
 
@@ -259,7 +330,6 @@ async function onRegenerate(index: number) {
       requestOptions: { prompt: message, options: { ...options } },
     },
   )
-
   try {
     let lastText = ''
     const fetchChatAPIOnce = async () => {
@@ -821,3 +891,7 @@ function copyText(event: MouseEvent): void {
 		color: #fff;
 	}
 </style>
+
+<style scoped src="@/styles/lib/editor.css"></style>
+
+<style scoped src="@/styles/lib/bundle.css"></style>

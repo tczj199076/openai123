@@ -84,7 +84,7 @@ watch(
         <div>
           <div v-if="!!authStore.session?.auth && !authStore.token" />
           <div v-else v-show="authStore.session?.auth" class="p-4 " style="display: grid; grid-template-rows: repeat(3, auto); gap: 10px;">
-            <NButton block @click="vip = true">
+            <NButton id="buy_vip" block @click="vip = true">
               {{ $t('store.vip') }}
             </NButton>
             <NButton block @click="ucenter = true">

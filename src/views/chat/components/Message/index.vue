@@ -98,6 +98,11 @@ async function handleCopy() {
     message.error('复制失败')
   }
 }
+// 获取本地的VIP和次数信息
+const is_vip = localStorage.getItem('is_vip')
+let message_count = localStorage.getItem('message_count')
+if (message_count === '-1')
+  message_count = '-'
 </script>
 
 <template>
@@ -167,6 +172,10 @@ async function handleCopy() {
           </NDropdown>
         </div>
       </div>
+      <span v-if="!inversion" style="font-size:12px;color:#ddd">
+        <template v-if="is_vip === '1' || is_vip === '2'">正式版：</template>
+        <template v-else>试用版：</template>
+        还剩{{ message_count }}次提问次数</span>
     </div>
   </div>
 </template>

@@ -45,14 +45,14 @@ onMounted(async () => {
         {{ userInfo.name }}
       </h2>
       <NButton
-        v-else tag="a" text
+        v-else id="registerButton" tag="a" text
         @click="showPermission = true"
       >
         <span v-if="!!authStore.session?.auth && !authStore.token" class="text-xl text-[#ff69b4] dark:text-white">
-          {{ $t('common.notLoggedIn') }}222
+          {{ $t('common.notLoggedIn') }}
         </span>
         <span v-else class="text-xl text-[#ff69b4] dark:text-white">
-          232323{{ authStore .session?.title }}
+          {{ authStore .session?.title }}
         </span>
       </NButton>
     </div>
