@@ -60,18 +60,37 @@ const options = computed(() => {
     },
   ]
 
+  // 点赞
   if (!props.inversion) {
     common.unshift({
-      label: asRawText.value ? t('chat.preview') : t('chat.showRawText'),
-      key: 'toggleRenderType',
-      icon: iconRender({ icon: asRawText.value ? 'ic:outline-code-off' : 'ic:outline-code' }),
+      label: '狂踩',
+      key: 'down',
+      icon: iconRender({ icon: 'ph:thumbs-down-duotone' }),
     })
   }
+
+  // 踩
+  if (!props.inversion) {
+    common.unshift({
+      label: '点赞',
+      key: 'up',
+      icon: iconRender({ icon: 'ph:thumbs-up-duotone' }),
+    })
+  }
+
+  // 20230506注销，因为暂时用不到，这是显示原文的按钮
+  // if (!props.inversion) {
+  //   common.unshift({
+  //     label: asRawText.value ? t('chat.preview') : t('chat.showRawText'),
+  //     key: 'toggleRenderType',
+  //     icon: iconRender({ icon: asRawText.value ? 'ic:outline-code-off' : 'ic:outline-code' }),
+  //   })
+  // }
 
   return common
 })
 
-function handleSelect(key: 'copyText' | 'delete' | 'toggleRenderType') {
+function handleSelect(key: 'copyText' | 'delete' | 'toggleRenderType' | 'up' | 'down') {
   switch (key) {
     case 'copyText':
       handleCopy()
@@ -81,7 +100,21 @@ function handleSelect(key: 'copyText' | 'delete' | 'toggleRenderType') {
       return
     case 'delete':
       emit('delete')
+      return
+    case 'up':
+      up()
+      return
+    case 'down':
+      down()
   }
+}
+// TODO 这里的点赞和踩的功能没有后端接口，目前仅仅是展示用 20230506
+async function up() {
+  message.success('感谢支持')
+}
+
+async function down() {
+  message.success('我会继续努力的')
 }
 
 function handleRegenerate() {
@@ -172,7 +205,7 @@ if (message_count === '-1')
           </NDropdown>
         </div>
       </div>
-      <span v-if="!inversion" style="font-size:12px;color:#ddd">
+      <span v-if="!inversion && is_vip !== null" style="font-size:12px;color:#ddd">
         <template v-if="is_vip === '1' || is_vip === '2'">正式版：</template>
         <template v-else>试用版：</template>
         还剩{{ message_count }}次提问次数</span>

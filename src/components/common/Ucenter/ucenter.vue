@@ -1,6 +1,7 @@
 <script setup lang='ts'>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { NModal } from 'naive-ui'
+import { getToken } from '@/store/modules/auth/helper'
 // import { useBasicLayout } from '@/hooks/useBasicLayout'
 interface Emit {
   (e: 'update:visible', visible: boolean): void
@@ -16,6 +17,28 @@ const emit = defineEmits<Emit>()
 const ucenter = computed({
   get: () => props.visible,
   set: (visible: boolean) => emit('update:visible', visible),
+})
+
+const data = ref<any>(null)
+const loaded = ref(false)
+// 请求接口并保存返回值到data
+
+async function fetchData() {
+  const formData = new FormData()
+  formData.append('token', getToken())
+  const response = await fetch('https://tp.openai123.vip/index/user/getUserInfo', {
+    method: 'POST',
+    body: formData,
+  })
+  const result = await response.json()
+  data.value = result
+  loaded.value = true
+}
+
+// 监听visible的变化，并在visible为true时调用fetchData方法
+watch(() => props.visible, (newVal) => {
+  if (newVal === true && !loaded.value)
+    fetchData()
 })
 
 // 移动端自适应相关
@@ -34,8 +57,8 @@ const ucenter = computed({
             <p class="card-text mb-auto text-muted ml-2">
               (提现功能尽情期待，目前余额可用于套餐抵扣)
             </p>
-            <h4 class="mt-5 ">
-              ￥28.00
+            <h4 v-if="loaded && data" class="mt-5 ">
+              ￥{{ data.data.info.balance }}
             </h4>
             <!-- <a href="#" class="stretched-link">Continue reading</a> -->
           </div>
@@ -49,31 +72,20 @@ const ucenter = computed({
             <h3 class="mb-0">
               我的订阅
             </h3>
-            <div class="mt-5">
-              <p class="card-text mb-auto text-muted ml-2">
-                基础季付套餐：于2024/03/15到期，套餐距离到期还有340天。
-              </p>
-              <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
-                <div class="progress-bar" style="width: 75%">
-                  75%
+            <div v-if="loaded && data">
+              <div v-for="item in data.data.info.vip" :key="item.id" class="mt-5">
+                <p class="card-text mb-auto text-muted ml-2">
+                  {{ item.name }}<span v-if="item.type === 1">：于{{ item.end_time }}到期，套餐距离到期还有{{ item.diff_date }}天。</span>
+                </p>
+                <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="{{item.per}}" aria-valuemin="0" aria-valuemax="100">
+                  <div class="progress-bar" style="width: {{item.per}}%">
+                    {{ item.per }}%
+                  </div>
                 </div>
+                <p class="card-text mb-auto text-muted ml-2 float-right">
+                  <span v-if="item.type === 1">本{{ item.unit }}</span> <span v-else> {{ item.name }}</span> 已提问{{ item.limit_num }}个问题，还剩{{ item.total_num }}个问题。
+                </p>
               </div>
-              <p class="card-text mb-auto text-muted ml-2 float-right">
-                本月（季/年）已提问25个问题，还剩275个问题。
-              </p>
-            </div>
-            <div class="mt-5">
-              <p class="card-text mb-auto text-muted ml-2">
-                固定流量包套餐
-              </p>
-              <div class="progress" role="progressbar" aria-label="Basic example" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
-                <div class="progress-bar" style="width: 75%">
-                  75%
-                </div>
-              </div>
-              <p class="card-text mb-auto text-muted ml-2 float-right">
-                固定流量包套餐已提问20个问题，还剩40个问题
-              </p>
             </div>
           </div>
         </div>

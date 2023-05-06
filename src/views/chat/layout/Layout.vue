@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { NLayout, NLayoutContent } from 'naive-ui'
 import { useRouter } from 'vue-router'
 import Sider from './sider/index.vue'
+import Header from './sider/Header.vue'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { useAppStore, useChatStore } from '@/store'
 
@@ -31,8 +32,11 @@ const getContainerClass = computed(() => {
 </script>
 
 <template>
-  <div class="h-full dark:bg-[#24272e] transition-all" :class="[isMobile ? 'p-0' : 'p-4']">
+  <div class="h-full dark:bg-[#24272e] transition-all" :class="[isMobile ? 'p-0' : 'p-0']">
     <div class="h-full overflow-hidden" :class="getMobileClass">
+      <div v-if="!isMobile" class="h-16 flex items-center justify-between bg-white dark:bg-neutral-900 px-4 fixed top-0 left-0 w-full z-50">
+        <Header />
+      </div>
       <NLayout class="z-40 transition" :class="getContainerClass" has-sider>
         <Sider />
         <NLayoutContent class="h-full">

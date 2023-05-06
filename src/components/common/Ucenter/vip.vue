@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { NButton, NModal } from 'naive-ui'
 // import { useBasicLayout } from '@/hooks/useBasicLayout'
 interface Emit {
@@ -21,35 +21,64 @@ const vip = computed({
 // 移动端自适应相关
 // const { isMobile } = useBasicLayout()
 
+const data = ref<any>(null)
+const loaded = ref(false)
+// 请求接口并保存返回值到data
+async function fetchData() {
+  const response = await fetch('https://tp.openai123.vip/index/vip/index')
+  const result = await response.json()
+  data.value = result
+  loaded.value = true
+}
+
+// 监听visible的变化，并在visible为true时调用fetchData方法
+watch(() => props.visible, (newVal) => {
+  if (newVal === true && !loaded.value)
+    fetchData()
+})
+
 const buy = ref(false)
+const confirmOrder = ref(false)
+
+interface Product {
+  id: number
+  name: string
+  price: number
+  sub_name: string
+  desc: string[]
+}
+
+const currentItem = ref<Product | null>(null)
 </script>
 
 <template>
   <NModal v-model:show="vip" style="width: 90%; max-width: 1200px;" preset="card">
-    <div v-if="buy">
+    <div v-if="loaded && buy">
       <div class="container">
         <div class="row mt-5">
           <div class="col-12 col-md-6 col-lg-5">
             <h2>
               商品信息
             </h2>
-            <div class="col text-center">
-              <div class="card mb-4 shadow-sm">
-                <div class="card-header">
-                  <h4 class="my-0 fw-normal">
-                    试用套餐
-                  </h4>
-                </div>
-                <div class="card-body">
-                  <h1 class="card-title pricing-card-title">
-                    ￥5 <small class="text-dark">/ 算力包</small>
-                  </h1>
-                  <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
-                    <li>折合每月5元/月</li>
-                    <li>总共20次提问次数</li>
-                    <li>提问次数永不过期</li>
-                    <li>24h快速客服响应</li>
-                  </ul>
+            <div v-if="loaded && buy && currentItem">
+              <div class="col text-center">
+                <div class="card mb-4 shadow-sm">
+                  <div class="card-header dark:bg-black">
+                    <h4 class="my-0 fw-normal">
+                      {{ currentItem.name }}
+                    </h4>
+                  </div>
+                  <div class="card-body dark:text-white dark:bg-[#24272e]">
+                    <h1 class="card-title pricing-card-title">
+                      ￥ {{ currentItem.price }} <small class="text-dark">/  {{ currentItem.sub_name }}</small>
+                    </h1>
+                    <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
+                      <li v-for="(desc, index) in currentItem.desc" :key="index">
+                        {{ desc }}
+                      </li>
+                      <li>24h快速客服响应</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
@@ -101,23 +130,33 @@ const buy = ref(false)
                   ￥80.00
                 </div>
               </div>
-              <h2 class="mt-4">
-                支付方式
-              </h2>
-              <div class="row mt-4 mb-20">
-                <div class="col">
-                  <div class="text-center">
-                    <div style="position: relative; display: inline-block;">
-                      <img src="https://bj.bcebos.com/qr-code/2304261188ccd46b05c3.jpg" style="width:150px;height:150px">
-                      <span style="position: absolute; bottom: -1.5rem; left: 50%; transform: translateX(-50%); text-align:center;">微信</span>
+              <div class="row pl-5 mt-4">
+                <button class="btn btn-secondary" @click="buy = false;confirmOrder = false">
+                  返回
+                </button>
+                <button class="btn btn-danger mt-4" @click="confirmOrder = true">
+                  确认订单
+                </button>
+              </div>
+              <div v-if="loaded && data && confirmOrder">
+                <h2 class="mt-4">
+                  支付方式
+                </h2>
+                <div class="row mt-4 mb-20">
+                  <div class="col">
+                    <div class="text-center">
+                      <div style="position: relative; display: inline-block;">
+                        <img src="https://bj.bcebos.com/qr-code/2304261188ccd46b05c3.jpg" style="width:150px;height:150px">
+                        <span style="position: absolute; bottom: -1.5rem; left: 50%; transform: translateX(-50%); text-align:center;">微信</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div class="col">
-                  <div class="text-center">
-                    <div style="position: relative; display: inline-block;">
-                      <img src="https://bj.bcebos.com/qr-code/2304261188ccd46b05c3.jpg" style="width:150px;height:150px">
-                      <span style="position: absolute; bottom: -1.5rem; left: 50%; transform: translateX(-50%); text-align:center;">支付宝</span>
+                  <div class="col">
+                    <div class="text-center">
+                      <div style="position: relative; display: inline-block;">
+                        <img src="https://bj.bcebos.com/qr-code/2304261188ccd46b05c3.jpg" style="width:150px;height:150px">
+                        <span style="position: absolute; bottom: -1.5rem; left: 50%; transform: translateX(-50%); text-align:center;">支付宝</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -137,145 +176,29 @@ const buy = ref(false)
           不同套餐，发送的消息次数不同。
         </p>
       </div>
-      <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
-        <div class="col">
-          <div class="card mb-4 shadow-sm">
-            <div class="card-header">
-              <h4 class="my-0 fw-normal">
-                试用套餐
-              </h4>
-            </div>
-            <div class="card-body">
-              <h1 class="card-title pricing-card-title">
-                ￥5 <small class="text-dark">/ 算力包</small>
-              </h1>
-              <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
-                <li>折合每月5元/月</li>
-                <li>总共20次提问次数</li>
-                <li>提问次数永不过期</li>
-                <li>24h快速客服响应</li>
-              </ul>
-              <NButton block @click="buy = true">
-                {{ $t('store.vip') }}
-              </NButton>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="card mb-4 shadow-sm">
-            <div class="card-header">
-              <h4 class="my-0 fw-normal">
-                加量试用套餐
-              </h4>
-            </div>
-            <div class="card-body">
-              <h1 class="card-title pricing-card-title">
-                ￥10 <small class="text-dark">/ 算力包</small>
-              </h1>
-              <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
-                <li>折合每月10元/月</li>
-                <li>总共40次提问次数</li>
-                <li>提问次数永不过期</li>
-                <li>24h快速客服响应</li>
-              </ul>
-              <NButton block @click="buy = true">
-                {{ $t('store.vip') }}
-              </NButton>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="card mb-4 shadow-sm">
-            <div class="card-header">
-              <h4 class="my-0 fw-normal">
-                简约月付套餐
-              </h4>
-            </div>
-            <div class="card-body">
-              <h1 class="card-title pricing-card-title">
-                ￥29 <small class="text-dark">/ 月付</small>
-              </h1>
-              <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
-                <li>折合每月29元/月</li>
-                <li>每月300次提问次数</li>
-                <li>有效期一个月</li>
-                <li>24h快速客服响应</li>
-              </ul>
-              <NButton block>
-                {{ $t('store.vip') }}
-              </NButton>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="card mb-4 shadow-sm">
-            <div class="card-header">
-              <h4 class="my-0 fw-normal">
-                基础季付套餐
-              </h4>
-            </div>
-            <div class="card-body">
-              <h1 class="card-title pricing-card-title">
-                ￥69 <small class="text-dark">/ 包季</small>
-              </h1>
-              <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
-                <li>折合每月23元/月</li>
-                <li>每月350次提问次数</li>
-                <li>有效期1个季度</li>
-                <li>当月剩余次数可累计</li>
-                <li>24h快速客服响应</li>
-              </ul>
-              <NButton block>
-                {{ $t('store.vip') }}
-              </NButton>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="card mb-4 shadow-sm">
-            <div class="card-header">
-              <h4 class="my-0 fw-normal">
-                加量年付套餐
-              </h4>
-            </div>
-            <div class="card-body">
-              <h1 class="card-title pricing-card-title">
-                ￥249 <small class="text-dark">/ 年付</small>
-              </h1>
-              <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
-                <li>折合每月21元/月</li>
-                <li>每月400次提问次数</li>
-                <li>有效期1年</li>
-                <li>当月剩余次数可累计</li>
-                <li>24h快速客服响应</li>
-              </ul>
-              <NButton block>
-                {{ $t('store.vip') }}
-              </NButton>
-            </div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="card mb-4 shadow-sm">
-            <div class="card-header">
-              <h4 class="my-0 fw-normal">
-                奢华年付套餐
-              </h4>
-            </div>
-            <div class="card-body">
-              <h1 class="card-title pricing-card-title">
-                ￥499 <small class="text-dark">/ 年付</small>
-              </h1>
-              <ul class="list-unstyled mt-3 mb-4 text-muted">
-                <li>折合约每月41元/月</li>
-                <li>无限提问次数</li>
-                <li>有效期1年</li>
-                <li>优先AI绘画，gpt4.0</li>
-                <li>24h快速客服响应</li>
-              </ul>
-              <NButton block>
-                {{ $t('store.vip') }}
-              </NButton>
+      <div v-if="loaded && data">
+        <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+          <div v-for="item in data.data.info" :key="item.id" class="col">
+            <div class="card mb-4 shadow-sm">
+              <div class="card-header dark:bg-black">
+                <h4 class="my-0 fw-normal ">
+                  {{ item.name }}
+                </h4>
+              </div>
+              <div class="card-body dark:text-white dark:bg-[#24272e]">
+                <h1 class="card-title pricing-card-title ">
+                  ￥{{ item.price }} <small class="text-dark">/ {{ item.sub_name }} </small>
+                </h1>
+                <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
+                  <li v-for="(desc, index) in item.desc" :key="index">
+                    {{ desc }}
+                  </li>
+                  <li>24h快速客服响应</li>
+                </ul>
+                <NButton block @click="buy = true; currentItem = item">
+                  {{ $t('store.vip') }}
+                </NButton>
+              </div>
             </div>
           </div>
         </div>

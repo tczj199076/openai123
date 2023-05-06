@@ -71,7 +71,7 @@ watch(
     :style="getMobileClass"
     @update-collapsed="handleUpdateCollapsed"
   >
-    <div class="flex flex-col h-full" :style="mobileSafeArea">
+    <div class="flex flex-col h-full pt-12" :style="mobileSafeArea">
       <main class="flex flex-col flex-1 min-h-0">
         <div class="p-4">
           <NButton dashed block :disabled="!!authStore.session?.auth && !authStore.token" @click="handleAdd">
@@ -99,7 +99,7 @@ watch(
           </div>
         </div>
       </main>
-      <Footer />
+      <Footer v-if="isMobile" />
     </div>
   </NLayoutSider>
   <template v-if="isMobile">
