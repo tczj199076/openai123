@@ -34,7 +34,7 @@ const getContainerClass = computed(() => {
 <template>
   <div class="h-full dark:bg-[#24272e] transition-all" :class="[isMobile ? 'p-0' : 'p-0']">
     <div class="h-full overflow-hidden" :class="getMobileClass">
-      <div v-if="!isMobile" class="h-16 flex items-center justify-between bg-white dark:bg-neutral-900 px-4 fixed top-0 left-0 w-full z-50">
+      <div v-if="!isMobile" class="h-16 flex items-center justify-between bg-white dark:bg-[#395168] px-4 fixed top-0 left-0 w-full z-50">
         <Header />
       </div>
       <NLayout class="z-40 transition" :class="getContainerClass" has-sider>

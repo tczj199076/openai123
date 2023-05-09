@@ -52,96 +52,92 @@ const currentItem = ref<Product | null>(null)
 </script>
 
 <template>
-  <NModal v-model:show="vip" style="width: 90%; max-width: 1200px;" preset="card">
+  <NModal v-model:show="vip" style="width: 90%; max-width: 960px;background: linear-gradient(to bottom right, #728da8, #abadb9);" preset="card">
     <div v-if="loaded && buy">
       <div class="container">
         <div class="row mt-5">
-          <div class="col-12 col-md-6 col-lg-5">
-            <h2>
+          <div class="col-12 col-md-12">
+            <p class="lead dark:text-black" style="font-weight:bold">
               商品信息
-            </h2>
+            </p>
             <div v-if="loaded && buy && currentItem">
-              <div class="col text-center">
-                <div class="card mb-4 shadow-sm">
-                  <div class="card-header dark:bg-black">
-                    <h4 class="my-0 fw-normal">
-                      {{ currentItem.name }}
-                    </h4>
-                  </div>
-                  <div class="card-body dark:text-white dark:bg-[#24272e]">
-                    <h1 class="card-title pricing-card-title">
-                      ￥ {{ currentItem.price }} <small class="text-dark">/  {{ currentItem.sub_name }}</small>
-                    </h1>
-                    <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
-                      <li v-for="(desc, index) in currentItem.desc" :key="index">
-                        {{ desc }}
-                      </li>
-                      <li>24h快速客服响应</li>
-                    </ul>
-                  </div>
+              <div class="row  mt-2 dark:text-black" style="font-size:16px">
+                <div class="col  text-center">
+                  套餐名称：
+                </div>
+                <div class="col ">
+                  {{ currentItem.name }}
+                </div>
+              </div>
+              <div class="row  mt-2 dark:text-black" style="font-size:16px">
+                <div class="col  text-center">
+                  套餐金额：
+                </div>
+                <div class="col " style="color:#ff580b;font-weight: bold;">
+                  {{ currentItem.price }}
                 </div>
               </div>
             </div>
           </div>
-          <div class="col-12 col-md-6 ms-auto pt-5 pt-md-0">
+          <div class="col-12 col-md-12 ms-auto pt-5 pt-md-0">
             <form>
               <div class="row">
-                <h2>
+                <p class="lead dark:text-black" style="font-weight:bold">
                   订单信息
-                </h2>
+                </p>
               </div>
-              <div class="row pl-5 mt-2">
-                <div class="col lead">
+              <div class="row mt-2 dark:text-black" style="font-size:16px">
+                <div class="col text-center">
                   订单号：
                 </div>
-                <div class="col lead">
+                <div class="col ">
                   2023042680000001
                 </div>
               </div>
-              <div class="row pl-5 mt-4">
-                <div class="col lead">
+              <div class="row mt-2 dark:text-black" style="font-size:16px">
+                <div class="col text-center">
                   订单创建时间：
                 </div>
-                <div class="col lead">
+                <div class="col ">
                   2023-04-26 11:12
                 </div>
               </div>
-              <div class="row pl-5 mt-4">
-                <div class="col lead">
+              <div class="row mt-2 dark:text-black" style="font-size:16px">
+                <div class="col text-center">
                   订单金额：
                 </div>
-                <div class="col lead">
+                <div class="col ">
                   ￥100.00
                 </div>
               </div>
-              <div class="row pl-5 mt-4">
-                <div class="col lead ">
+              <div class="row mt-2 dark:text-black" style="font-size:16px">
+                <div class="col text-center">
                   余额抵扣：
                 </div>
                 <div class="col">
-                  <input type="email" class="form-control form-control-sm" placeholder="可用余额：￥20.00">
+                  <input type="email" class="form-control form-control-sm " placeholder="可用余额：￥20.00">
                 </div>
               </div>
-              <div class="row pl-5 mt-4">
-                <div class="col lead ">
+              <div class="row mt-2 dark:text-black" style="font-size:16px">
+                <div class="col text-center">
                   实际支付：
                 </div>
-                <div class="col lead">
+                <div class="col " style="color:#ff580b;font-weight: bold;">
                   ￥80.00
                 </div>
               </div>
               <div class="row pl-5 mt-4">
-                <button class="btn btn-secondary" @click="buy = false;confirmOrder = false">
+                <NButton type="info" block @click="buy = false;confirmOrder = false">
                   返回
-                </button>
-                <button class="btn btn-danger mt-4" @click="confirmOrder = true">
+                </NButton>
+                <NButton class="mt-3" type="warning" block @click="confirmOrder = true">
                   确认订单
-                </button>
+                </NButton>
               </div>
-              <div v-if="loaded && data && confirmOrder">
-                <h2 class="mt-4">
+              <div v-if="loaded && data && confirmOrder" class="mt-5">
+                <p class="lead dark:text-black" style="font-weight:bold">
                   支付方式
-                </h2>
+                </p>
                 <div class="row mt-4 mb-20">
                   <div class="col">
                     <div class="text-center">
@@ -168,34 +164,31 @@ const currentItem = ref<Product | null>(null)
     </div>
     <!-- 初次加载时 -->
     <div v-else>
-      <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-        <h1 class="display-4">
+      <div class="pricing-header  px-3 py-3 pt-md-3 pb-md-3 mx-auto text-center">
+        <p class="lead fs-2 dark:text-black">
           开通会员，获取AI聊天权限
-        </h1>
-        <p class="lead">
+        </p>
+        <p class="lead dark:text-black">
           不同套餐，发送的消息次数不同。
         </p>
       </div>
       <div v-if="loaded && data">
-        <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+        <div class="row row-cols-1 row-cols-md-3 mb-3 ">
           <div v-for="item in data.data.info" :key="item.id" class="col">
-            <div class="card mb-4 shadow-sm">
-              <div class="card-header dark:bg-black">
-                <h4 class="my-0 fw-normal ">
+            <div class="card mb-4 shadow-sm border-0">
+              <div class="card-body dark:text-black dark:bg-[#909eb1]" style="background: linear-gradient(to bottom right, #728da8, #abadb9);border-radius: 5px;">
+                <p class="fs-5 ">
                   {{ item.name }}
-                </h4>
-              </div>
-              <div class="card-body dark:text-white dark:bg-[#24272e]">
-                <h1 class="card-title pricing-card-title ">
-                  ￥{{ item.price }} <small class="text-dark">/ {{ item.sub_name }} </small>
-                </h1>
-                <ul class="list-unstyled mt-3 mb-4 text-muted subtitle">
+                </p>
+                <ul class="list-unstyled text-black" style="font-size:14px">
                   <li v-for="(desc, index) in item.desc" :key="index">
-                    {{ desc }}
+                    <span class=" mr-2" style="color:#fff !important;font-weight: bold;">√</span>{{ desc }}
                   </li>
-                  <li>24h快速客服响应</li>
                 </ul>
-                <NButton block @click="buy = true; currentItem = item">
+                <p class="fs-5 font-weight" style="color:#ff580b;font-weight: bold;">
+                  ￥{{ item.price }} <small class="text-dark">/ {{ item.sub_name }} </small>
+                </p>
+                <NButton type="warning" block @click="buy = true; currentItem = item">
                   {{ $t('store.vip') }}
                 </NButton>
               </div>

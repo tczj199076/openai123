@@ -633,7 +633,7 @@ function copyText(event: MouseEvent): void {
 </script>
 
 <template>
-  <div style="width:100%;height:100%">
+  <div style="width:100%;height:100%;background: linear-gradient(to bottom right, #728da8, #abadb9);">
     <div v-if="hasLogin" class="flex flex-col w-full h-full">
       <HeaderComponent
         v-if="isMobile"
@@ -646,7 +646,7 @@ function copyText(event: MouseEvent): void {
         <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto" @scroll="handleScroll">
           <div
             id="image-wrapper"
-            class="w-full max-w-screen-xl m-auto dark:bg-[#101014] pt-12"
+            class="w-full max-w-screen-xl m-auto  pt-16"
             :class="[isMobile ? 'p-2' : 'p-4']"
           >
             <NSpin :show="firstLoading">
@@ -665,13 +665,13 @@ function copyText(event: MouseEvent): void {
                       AI创作
                     </h2>
                     <ul class="h2ul">
-                      <li class="dark:text-white dark:bg-[#24272e]" @click="copyText">
+                      <li class="dark:text-white dark:bg-[#7695b5] dark:hover:bg-[#70c0e8]" @click="copyText">
                         <div>写一首赞美祖国的诗，50字以上 →</div>
                       </li>
-                      <li class="dark:text-white dark:bg-[#24272e]" @click="copyText">
+                      <li class="dark:text-white dark:bg-[#7695b5] dark:hover:bg-[#70c0e8]" @click="copyText">
                         <div>写一篇在线聊天通信的产品策划 →</div>
                       </li>
-                      <li class="dark:text-white dark:bg-[#24272e]" @click="copyText">
+                      <li class="dark:text-white dark:bg-[#7695b5] dark:hover:bg-[#70c0e8]" @click="copyText">
                         <div>写一篇境外电商平台的活动策划 →</div>
                       </li>
                     </ul>
@@ -686,13 +686,13 @@ function copyText(event: MouseEvent): void {
                       有趣的问题
                     </h2>
                     <ul class="h2ul">
-                      <li class="dark:text-white dark:bg-[#24272e]" @click="copyText">
+                      <li class="dark:text-white dark:bg-[#7695b5] dark:hover:bg-[#70c0e8]" @click="copyText">
                         <div>我和猫咪的关系是否是奴役关系 →</div>
                       </li>
-                      <li class="dark:text-white dark:bg-[#24272e]" @click="copyText">
+                      <li class="dark:text-white dark:bg-[#7695b5] dark:hover:bg-[#70c0e8]" @click="copyText">
                         <div>人死了真的有下一世吗 →</div>
                       </li>
-                      <li class="dark:text-white dark:bg-[#24272e]" @click="copyText">
+                      <li class="dark:text-white dark:bg-[#7695b5] dark:hover:bg-[#70c0e8]" @click="copyText">
                         <div>相由心生有没有科学道理 →</div>
                       </li>
                     </ul>
@@ -707,13 +707,13 @@ function copyText(event: MouseEvent): void {
                       AI百科
                     </h2>
                     <ul class="h2ul">
-                      <li class="dark:text-white dark:bg-[#24272e]" @click="copyText">
+                      <li class="dark:text-white dark:bg-[#7695b5] dark:hover:bg-[#70c0e8]" @click="copyText">
                         <div>智齿必须拔掉吗 →</div>
                       </li>
-                      <li class="dark:text-white dark:bg-[#24272e]" @click="copyText">
+                      <li class="dark:text-white dark:bg-[#7695b5] dark:hover:bg-[#70c0e8]" @click="copyText">
                         <div>糖醋里脊的做法 →</div>
                       </li>
-                      <li class="dark:text-white dark:bg-[#24272e]" @click="copyText">
+                      <li class="dark:text-white dark:bg-[#7695b5] dark:hover:bg-[#70c0e8]" @click="copyText">
                         <div>什么姓氏历史上没出现过名人 →</div>
                       </li>
                     </ul>
@@ -728,13 +728,13 @@ function copyText(event: MouseEvent): void {
                       AI预测
                     </h2>
                     <ul class="h2ul">
-                      <li class="dark:text-white dark:bg-[#24272e]" @click="copyText">
+                      <li class="dark:text-white dark:bg-[#7695b5] dark:hover:bg-[#70c0e8]" @click="copyText">
                         <div>未来热门的行业和职业 →</div>
                       </li>
-                      <li class="dark:text-white dark:bg-[#24272e]" @click="copyText">
+                      <li class="dark:text-white dark:bg-[#7695b5] dark:hover:bg-[#70c0e8]" @click="copyText">
                         <div>下一个球王会是谁 →</div>
                       </li>
-                      <li class="dark:text-white dark:bg-[#24272e]" @click="copyText">
+                      <li class="dark:text-white dark:bg-[#7695b5] dark:hover:bg-[#70c0e8]" @click="copyText">
                         <div>未来城市的设计和建设 →</div>
                       </li>
                     </ul>
@@ -808,9 +808,9 @@ function copyText(event: MouseEvent): void {
                 />
               </template>
             </NAutoComplete>
-            <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
+            <NButton type="warning" :disabled="buttonDisabled" @click="handleSubmit">
               <template #icon>
-                <span class="dark:text-black">
+                <span class="dark:text-white">
                   <SvgIcon icon="ri:send-plane-fill" />
                 </span>
               </template>

@@ -205,7 +205,7 @@ if (message_count === '-1')
           </NDropdown>
         </div>
       </div>
-      <span v-if="!inversion && is_vip !== null" style="font-size:12px;color:#ddd">
+      <span v-if="!inversion && is_vip !== null" class="text-xs text-[#b4bbc4] text-left">
         <template v-if="is_vip === '1' || is_vip === '2'">正式版：</template>
         <template v-else>试用版：</template>
         还剩{{ message_count }}次提问次数</span>

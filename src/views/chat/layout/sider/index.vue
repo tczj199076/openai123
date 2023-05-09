@@ -15,6 +15,7 @@ const chatStore = useChatStore()
 const { isMobile } = useBasicLayout()
 const vip = ref(false)
 const ucenter = ref(false)
+// const show = ref(false)
 
 const collapsed = computed(() => appStore.siderCollapsed)
 
@@ -71,10 +72,10 @@ watch(
     :style="getMobileClass"
     @update-collapsed="handleUpdateCollapsed"
   >
-    <div class="flex flex-col h-full pt-12" :style="mobileSafeArea">
+    <div class="flex flex-col h-full pt-12 dark:bg-[#395168]" :style="mobileSafeArea">
       <main class="flex flex-col flex-1 min-h-0">
         <div class="p-4">
-          <NButton dashed block :disabled="!!authStore.session?.auth && !authStore.token" @click="handleAdd">
+          <NButton type="warning" dark:text-white block :disabled="!!authStore.session?.auth && !authStore.token" @click="handleAdd">
             {{ $t('chat.newChatButton') }}
           </NButton>
         </div>
@@ -84,13 +85,13 @@ watch(
         <div>
           <div v-if="!!authStore.session?.auth && !authStore.token" />
           <div v-else v-show="authStore.session?.auth" class="p-4 " style="display: grid; grid-template-rows: repeat(3, auto); gap: 10px;">
-            <NButton id="buy_vip" block @click="vip = true">
+            <NButton id="buy_vip" type="warning" dark:text-white block @click="vip = true">
               {{ $t('store.vip') }}
             </NButton>
-            <NButton block @click="ucenter = true">
+            <NButton type="warning" dark:text-white block @click="ucenter = true">
               {{ $t('store.ucenter') }}
             </NButton>
-            <NButton>
+            <NButton type="warning" dark:text-white>
               {{ $t('store.help') }}
             </NButton>
             <!-- <NButton block @click="show = true">

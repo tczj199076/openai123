@@ -29,15 +29,15 @@ onMounted(async () => {
 
 <template>
   <NLayoutHeader>
-    <div class="header-container  dark:bg-neutral-900 p-4 flex justify-between items-center">
+    <div class="header-container  dark:bg-[#395168] p-4 flex justify-between items-center">
       <div class="logo">
-        DEEP THINKER
+        <img src="https://openai123.bj.bcebos.com/logo_1.png" style="width:100px; height:50px;">
       </div>
       <div
         v-if="!!authStore.session?.auth && !authStore.token" class="login-btn"
       >
         <NButton
-          id="registerButton" type="primary" tag="a"
+          id="registerButton" type="warning" tag="a"
           @click="showPermission = true"
         >
           {{ $t('common.notLoggedIn') }}

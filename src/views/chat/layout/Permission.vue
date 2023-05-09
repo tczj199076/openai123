@@ -221,7 +221,7 @@ watch(() => route.query.mobileFrom, (value) => {
 <!-- 判断是否是手机，如果是手机，则第一次登录不显示模态框，否则自动显示模态框 -->
 <template>
   <NModal v-if="(isMobile && mobileFrom) || !isMobile" :show="visible" style="width: 90%; max-width: 440px">
-    <div class="p-10 bg-white rounded dark:bg-slate-800">
+    <div class="p-10 bg-white rounded " style="background: linear-gradient(to bottom right, #728da8, #abadb9);">
       <div class="space-y-4">
         <header class="space-y-2">
           <h2 class="text-2xl font-bold text-center text-slate-800 dark:text-neutral-200">
@@ -235,7 +235,7 @@ watch(() => route.query.mobileFrom, (value) => {
             <NInput v-model:value="username" type="text" :placeholder="$t('common.email')" class="mb-2" />
             <NInput v-model:value="password" type="password" :placeholder="$t('common.password')" class="mb-2" @keypress="handlePress" />
 
-            <NButton block type="primary" :disabled="disabled" :loading="loading" @click="handleLogin">
+            <NButton block type="warning" :disabled="disabled" :loading="loading" @click="handleLogin">
               {{ $t('common.login') }}
             </NButton>
           </NTabPane>
@@ -252,7 +252,7 @@ watch(() => route.query.mobileFrom, (value) => {
               :status="confirmPasswordStatus"
             />
 
-            <NButton block type="primary" :disabled="disabled || password !== confirmPassword" :loading="loading" @click="handleRegister">
+            <NButton block type="warning" :disabled="disabled || password !== confirmPassword" :loading="loading" @click="handleRegister">
               {{ $t('common.register') }}
             </NButton>
           </NTabPane>
@@ -268,10 +268,10 @@ watch(() => route.query.mobileFrom, (value) => {
               class="mb-4"
               :status="confirmPasswordStatus"
             />
-            <NButton v-if="!sign" block type="primary" :disabled="username.length <= 0" :loading="loading" @click="handleSendResetMail">
+            <NButton v-if="!sign" block type="warning" :disabled="username.length <= 0" :loading="loading" @click="handleSendResetMail">
               {{ $t('common.resetPasswordMail') }}
             </NButton>
-            <NButton v-else block type="primary" :disabled="disabled || password !== confirmPassword" :loading="loading" @click="handleResetPassword">
+            <NButton v-else block type="warning" :disabled="disabled || password !== confirmPassword" :loading="loading" @click="handleResetPassword">
               {{ $t('common.resetPassword') }}
             </NButton>
           </NTabPane>
