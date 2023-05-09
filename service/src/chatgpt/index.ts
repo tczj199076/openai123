@@ -12,6 +12,7 @@ import { getCacheConfig, getOriginConfig } from '../storage/config'
 import { sendResponse } from '../utils'
 import { isNotEmptyString } from '../utils/is'
 import type { ChatContext, ChatGPTUnofficialProxyAPIOptions, ModelConfig } from '../types'
+import { getChatByMessageId } from '../storage/mongo'
 import type { RequestOptions } from './types'
 
 const { HttpsProxyAgent } = httpsProxyAgent
@@ -45,6 +46,8 @@ export async function initApi() {
       apiKey: config.apiKey,
       completionParams: { model },
       debug: !config.apiDisableDebug,
+      messageStore: undefined,
+      getMessageById,
     }
     // increase max token limit if use gpt-4
     if (model.toLowerCase().includes('gpt-4')) {
@@ -142,13 +145,13 @@ async function containsSensitiveWords(audit: AuditConfig, text: string): Promise
   }
   return false
 }
-let cachedBanlance: number | undefined
+let cachedBalance: number | undefined
 let cacheExpiration = 0
 
 async function fetchBalance() {
   const now = new Date().getTime()
-  if (cachedBanlance && cacheExpiration > now)
-    return Promise.resolve(cachedBanlance.toFixed(3))
+  if (cachedBalance && cacheExpiration > now)
+    return Promise.resolve(cachedBalance.toFixed(3))
 
   // 计算起始日期和结束日期
   const startDate = new Date(now - 90 * 24 * 60 * 60 * 1000)
@@ -206,10 +209,10 @@ async function fetchBalance() {
     const totalUsage = usageData.total_usage / 100
 
     // 计算剩余额度
-    cachedBanlance = totalAmount - totalUsage
+    cachedBalance = totalAmount - totalUsage
     cacheExpiration = now + 60 * 60 * 1000
 
-    return Promise.resolve(cachedBanlance.toFixed(3))
+    return Promise.resolve(cachedBalance.toFixed(3))
   }
   catch (error) {
     global.console.error(error)
@@ -259,6 +262,33 @@ async function setupProxy(options: ChatGPTAPIOptions | ChatGPTUnofficialProxyAPI
       }
     }
   }
+}
+
+async function getMessageById(id: string): Promise<ChatMessage | undefined> {
+  const isPrompt = id.startsWith('prompt_')
+  const chatInfo = await getChatByMessageId(isPrompt ? id.substring(7) : id)
+
+  if (chatInfo) {
+    if (isPrompt) { // prompt
+      return {
+        id,
+        conversationId: chatInfo.options.conversationId,
+        parentMessageId: chatInfo.options.parentMessageId,
+        role: 'user',
+        text: chatInfo.prompt,
+      }
+    }
+    else {
+      return { // completion
+        id,
+        conversationId: chatInfo.options.conversationId,
+        parentMessageId: `prompt_${id}`, // parent message is the prompt
+        role: 'assistant',
+        text: chatInfo.response,
+      }
+    }
+  }
+  else { return undefined }
 }
 
 initApi()
