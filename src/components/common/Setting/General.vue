@@ -37,16 +37,16 @@ const language = computed({
 })
 
 const themeOptions: { label: string; key: Theme; icon: string }[] = [
-  {
-    label: 'Auto',
-    key: 'auto',
-    icon: 'ri:contrast-line',
-  },
-  {
-    label: 'Light',
-    key: 'light',
-    icon: 'ri:sun-foggy-line',
-  },
+  // {
+  //   label: 'Auto',
+  //   key: 'auto',
+  //   icon: 'ri:contrast-line',
+  // },
+  // {
+  //   label: 'Light',
+  //   key: 'light',
+  //   icon: 'ri:sun-foggy-line',
+  // },
   {
     label: 'Dark',
     key: 'dark',
