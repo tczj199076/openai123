@@ -26,7 +26,7 @@ const loaded = ref(false)
 async function fetchData() {
   const formData = new FormData()
   formData.append('token', getToken())
-  const response = await fetch('https://tp.openai123.vip/index/user/getUserInfo', {
+  const response = await fetch('https://cms.openai123.vip/api/getUserInfo', {
     method: 'POST',
     body: formData,
   })

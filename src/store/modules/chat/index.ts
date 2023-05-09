@@ -1,18 +1,8 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
 import { getToken } from '../auth/helper'
 import { getLocalState, setLocalState } from './helper'
 import { router } from '@/router'
 import { fetchClearChat, fetchCreateChatRoom, fetchDeleteChat, fetchDeleteChatRoom, fetchGetChatHistory, fetchGetChatRooms, fetchRenameChatRoom } from '@/api'
-
-async function fetchGetLoginCount(url: string, params: object): Promise<any> {
-  const response = await axios({
-    method: 'post',
-    url,
-    data: params,
-  })
-  return response.data
-}
 
 export const useChatStore = defineStore('chat-store', {
   state: (): Chat.ChatState => getLocalState(),
@@ -93,10 +83,16 @@ export const useChatStore = defineStore('chat-store', {
             localStorage.removeItem('tmp')
           let tmp
           if (!localStorage.getItem('tmp')) {
-            const countResult = await fetchGetLoginCount('https://tp.openai123.vip/index/index/getLoginCount', { token: getToken() })
+            const formData = new FormData()
+            formData.append('token', getToken())
+            const countResult = await fetch('https://cms.openai123.vip/api/getLoginCount', {
+              method: 'POST',
+              body: formData,
+            })
+            const responseJson = await countResult.json()
             const date = new Date()
             const formattedDate = date.toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true })
-            if (countResult.data.count === 1) {
+            if (responseJson && responseJson.data && responseJson.data.count === 1) {
               tmp = {
                 uuid: 1682588796913,
                 dateTime: formattedDate,

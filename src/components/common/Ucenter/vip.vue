@@ -25,7 +25,7 @@ const data = ref<any>(null)
 const loaded = ref(false)
 // 请求接口并保存返回值到data
 async function fetchData() {
-  const response = await fetch('https://tp.openai123.vip/index/vip/index')
+  const response = await fetch('https://cms.openai123.vip/api/vip')
   const result = await response.json()
   data.value = result
   loaded.value = true

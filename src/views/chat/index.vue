@@ -75,14 +75,14 @@ async function onConversation() {
   // 开始之前 先请求一下接口，判断一下，如果没次数了，就return
   const formData = new FormData()
   formData.append('token', getToken())
-  const response = await fetch('https://tp.openai123.vip/index/chat/chatVerify', {
+  const response = await fetch('https://cms.openai123.vip/api/chatVerify', {
     method: 'POST',
     body: formData,
   })
   const userinfo = await response.json()
   // 这里开始存入localstorage，把次数和vip保存下
   localStorage.setItem('is_vip', userinfo.data.info.is_vip)
-  if (userinfo.data.code === 0) {
+  if (userinfo.code === 0) {
     if (userinfo.data.info.is_vip === 2)
       localStorage.setItem('message_count', '-1')
     else
@@ -270,14 +270,14 @@ async function onRegenerate(index: number) {
   // 开始之前 先请求一下接口，判断一下，如果没次数了，就return
   const formData = new FormData()
   formData.append('token', getToken())
-  const response = await fetch('https://tp.openai123.vip/index/chat/chatVerify', {
+  const response = await fetch('https://cms.openai123.vip/api/chatVerify', {
     method: 'POST',
     body: formData,
   })
   const userinfo = await response.json()
   // 这里开始存入localstorage，把次数和vip保存下
   localStorage.setItem('is_vip', userinfo.data.info.is_vip)
-  if (userinfo.data.code === 0) {
+  if (userinfo.code === 0) {
     if (userinfo.data.info.is_vip === 2)
       localStorage.setItem('message_count', '-1')
     else

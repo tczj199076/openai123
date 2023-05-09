@@ -2,7 +2,6 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { NButton, NInput, NModal, NTabPane, NTabs, useMessage } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
 import { fetchLogin, fetchRegister, fetchResetPassword, fetchSendResetMail, fetchVerify, fetchVerifyAdmin } from '@/api'
 import { useAuthStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
@@ -112,15 +111,6 @@ function handlePress(event: KeyboardEvent) {
   }
 }
 
-async function fetchJson(url: string, params: object): Promise<any> {
-  const response = await axios({
-    method: 'post',
-    url,
-    data: params,
-  })
-  return response.data
-}
-
 async function handleLogin() {
   const name = username.value.trim()
   const pwd = password.value.trim()
@@ -133,9 +123,12 @@ async function handleLogin() {
     const result = await fetchLogin(name, pwd)
     await authStore.setToken(result.data.token)
     // 发起一个TP的请求，注册用户
-    const postData = { token: result.data.token }
-    await fetchJson('https://tp.openai123.vip/index/index/login', postData)
-
+    const formData = new FormData()
+    formData.append('token', result.data.token)
+    await fetch('https://cms.openai123.vip/api/login', {
+      method: 'POST',
+      body: formData,
+    })
     ms.success('登录成功')
     router.go(0)
   }
