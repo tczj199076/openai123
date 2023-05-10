@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watchEffect } from 'vue'
 import { NButton, NInput, NModal, NTabPane, NTabs, useMessage } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchLogin, fetchRegister, fetchResetPassword, fetchSendResetMail, fetchVerify, fetchVerifyAdmin } from '@/api'
@@ -31,6 +31,7 @@ const ms = useMessage()
 const loading = ref(false)
 const username = ref('')
 const password = ref('')
+
 const sign = ref('')
 const { isMobile } = useBasicLayout()
 const mobileFrom = ref('')
@@ -41,6 +42,7 @@ const activeTab = ref('login')
 
 const showConfirmPassword = ref(false)
 const confirmPassword = ref('')
+const invite = ref('')
 
 function handlePasswordInput() {
   showConfirmPassword.value = password.value.trim() !== ''
@@ -57,6 +59,13 @@ onMounted(async () => {
   await handleVerify(verifytoken)
   const verifytokenadmin = route.query.verifytokenadmin as string
   await handleVerifyAdmin(verifytokenadmin)
+  // 获取fromUser参数并进行赋值操作
+
+  const fromUserParam = route.query.fromUser as string
+  if (fromUserParam) {
+    localStorage.setItem('inviteCode', fromUserParam)
+    invite.value = fromUserParam
+  }
   sign.value = route.query.verifyresetpassword as string
   if (sign.value) {
     username.value = sign.value.split('-')[0].split('|')[0]
@@ -121,16 +130,25 @@ async function handleLogin() {
   try {
     loading.value = true
     const result = await fetchLogin(name, pwd)
-    await authStore.setToken(result.data.token)
-    // 发起一个TP的请求，注册用户
+    // 发起API请求
     const formData = new FormData()
     formData.append('token', result.data.token)
-    await fetch('https://cms.openai123.vip/api/login', {
+    const inviteCode = localStorage.getItem('inviteCode') ?? ''
+    formData.append('inviteCode', inviteCode)
+
+    const response = await fetch('https://cms.openai123.vip/api/login', {
       method: 'POST',
       body: formData,
     })
-    ms.success('登录成功')
-    router.go(0)
+    // 如果所有请求都成功了，才执行后续操作
+    if (response.ok) {
+      await authStore.setToken(result.data.token)
+      ms.success('登录成功')
+      router.go(0)
+    }
+    else {
+      throw new Error('登录失败')
+    }
   }
   catch (error: any) {
     ms.error(error.message ?? 'error')
@@ -205,15 +223,23 @@ async function handleResetPassword() {
     loading.value = false
   }
 }
-watch(() => route.query.mobileFrom, (value) => {
-  mobileFrom.value = value as string || ''
+watchEffect(() => {
+  const mobileFromParam = route.query.mobileFrom as string
+  const fromUserParam = route.query.fromUser as string
 
-  if (mobileFrom.value) {
+  if (mobileFromParam) {
+    // 执行mobileFrom相关操作
     // 获取目标按钮元素
     const button: HTMLButtonElement | null = document.querySelector('#registerButton')
     // 模拟点击操作
     if (button)
       button.click()
+  }
+
+  if (fromUserParam) {
+    // 执行fromUser相关操作
+    localStorage.setItem('inviteCode', fromUserParam)
+    invite.value = fromUserParam
   }
 })
 </script>
@@ -251,7 +277,7 @@ watch(() => route.query.mobileFrom, (value) => {
               class="mb-4"
               :status="confirmPasswordStatus"
             />
-
+            <NInput id="inviteCode" v-model:value="invite" readonly="readonly" type="text" :placeholder="$t('common.invite')" class="mb-2" />
             <NButton block type="warning" :disabled="disabled || password !== confirmPassword" :loading="loading" @click="handleRegister">
               {{ $t('common.register') }}
             </NButton>

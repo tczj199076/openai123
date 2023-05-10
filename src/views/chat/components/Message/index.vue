@@ -1,6 +1,6 @@
 <script setup lang='ts'>
-import { computed, ref } from 'vue'
-import { NDropdown, NPopover, useMessage } from 'naive-ui'
+import { ref } from 'vue'
+import { NPopover, useMessage } from 'naive-ui'
 import AvatarComponent from './Avatar.vue'
 import TextComponent from './Text.vue'
 import { SvgIcon } from '@/components/common'
@@ -46,68 +46,68 @@ const messageRef = ref<HTMLElement>()
 
 const url_openai_token = 'https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them'
 
-const options = computed(() => {
-  const common = [
-    {
-      label: t('chat.copy'),
-      key: 'copyText',
-      icon: iconRender({ icon: 'ri:file-copy-2-line' }),
-    },
-    {
-      label: t('common.delete'),
-      key: 'delete',
-      icon: iconRender({ icon: 'ri:delete-bin-line' }),
-    },
-  ]
+// const options = computed(() => {
+//   const common = [
+//     {
+//       label: t('chat.copy'),
+//       key: 'copyText',
+//       icon: iconRender({ icon: 'ri:file-copy-2-line' }),
+//     },
+//     {
+//       label: t('common.delete'),
+//       key: 'delete',
+//       icon: iconRender({ icon: 'ri:delete-bin-line' }),
+//     },
+//   ]
 
-  // 点赞
-  if (!props.inversion) {
-    common.unshift({
-      label: '狂踩',
-      key: 'down',
-      icon: iconRender({ icon: 'ph:thumbs-down-duotone' }),
-    })
-  }
+//   // 点赞
+//   if (!props.inversion) {
+//     common.unshift({
+//       label: '狂踩',
+//       key: 'down',
+//       icon: iconRender({ icon: 'ph:thumbs-down-duotone' }),
+//     })
+//   }
 
-  // 踩
-  if (!props.inversion) {
-    common.unshift({
-      label: '点赞',
-      key: 'up',
-      icon: iconRender({ icon: 'ph:thumbs-up-duotone' }),
-    })
-  }
+//   // 踩
+//   if (!props.inversion) {
+//     common.unshift({
+//       label: '点赞',
+//       key: 'up',
+//       icon: iconRender({ icon: 'ph:thumbs-up-duotone' }),
+//     })
+//   }
 
-  // 20230506注销，因为暂时用不到，这是显示原文的按钮
-  // if (!props.inversion) {
-  //   common.unshift({
-  //     label: asRawText.value ? t('chat.preview') : t('chat.showRawText'),
-  //     key: 'toggleRenderType',
-  //     icon: iconRender({ icon: asRawText.value ? 'ic:outline-code-off' : 'ic:outline-code' }),
-  //   })
-  // }
+//   // 20230506注销，因为暂时用不到，这是显示原文的按钮
+//   if (!props.inversion) {
+//     common.unshift({
+//       label: asRawText.value ? t('chat.preview') : t('chat.showRawText'),
+//       key: 'toggleRenderType',
+//       icon: iconRender({ icon: asRawText.value ? 'ic:outline-code-off' : 'ic:outline-code' }),
+//     })
+//   }
 
-  return common
-})
-
-function handleSelect(key: 'copyText' | 'delete' | 'toggleRenderType' | 'up' | 'down') {
-  switch (key) {
-    case 'copyText':
-      handleCopy()
-      return
-    case 'toggleRenderType':
-      asRawText.value = !asRawText.value
-      return
-    case 'delete':
-      emit('delete')
-      return
-    case 'up':
-      up()
-      return
-    case 'down':
-      down()
-  }
-}
+//   return common
+// })
+// 20230506注销，因为暂时用不到，这是显示原文的按钮
+// function handleSelect(key: 'copyText' | 'delete' | 'toggleRenderType' | 'up' | 'down') {
+//   switch (key) {
+//     case 'copyText':
+//       handleCopy()
+//       return
+//     case 'toggleRenderType':
+//       asRawText.value = !asRawText.value
+//       return
+//     case 'delete':
+//       emit('delete')
+//       return
+//     case 'up':
+//       up()
+//       return
+//     case 'down':
+//       down()
+//   }
+// }
 // TODO 这里的点赞和踩的功能没有后端接口，目前仅仅是展示用 20230506
 async function up() {
   message.success('感谢支持')
@@ -189,11 +189,12 @@ if (message_count === '-1')
           <button
             v-if="!inversion"
             class="mb-2 transition text-neutral-300 hover:text-neutral-800 dark:hover:text-neutral-300"
+            title="重新回答"
             @click="handleRegenerate"
           >
             <SvgIcon icon="ri:restart-line" />
           </button>
-          <NDropdown
+          <!-- <NDropdown
             :trigger="isMobile ? 'click' : 'hover'"
             :placement="!inversion ? 'right' : 'left'"
             :options="options"
@@ -202,13 +203,27 @@ if (message_count === '-1')
             <button class="transition text-neutral-300 hover:text-neutral-800 dark:hover:text-neutral-200">
               <SvgIcon icon="ri:more-2-fill" />
             </button>
-          </NDropdown>
+          </NDropdown> -->
         </div>
       </div>
       <span v-if="!inversion && is_vip !== null" class="text-xs text-[#b4bbc4] text-left">
         <template v-if="is_vip === '1' || is_vip === '2'">正式版：</template>
         <template v-else>试用版：</template>
         还剩{{ message_count }}次提问次数</span>
+      <span v-if="!inversion" class="float-right text-xs text-[#b4bbc4] mr-4">
+        <button class="transition text-neutral-300 hover:text-neutral-800 dark:hover:text-neutral-200 p-1" title="点赞" @click="up">
+          <SvgIcon icon="ph:thumbs-up-duotone" />
+        </button>
+        <button class="transition text-neutral-300 hover:text-neutral-800 dark:hover:text-neutral-200 p-1" title="狂踩" @click="down">
+          <SvgIcon icon="ph:thumbs-down-duotone" />
+        </button>
+        <button class="transition text-neutral-300 hover:text-neutral-800 dark:hover:text-neutral-200 p-1" title="复制" @click="handleCopy">
+          <SvgIcon icon="ri:file-copy-2-line" />
+        </button>
+        <button class="transition text-neutral-300 hover:text-neutral-800 dark:hover:text-neutral-200 p-1" title="删除" @click="emit('delete')">
+          <SvgIcon icon="ri:delete-bin-line" />
+        </button>
+      </span>
     </div>
   </div>
 </template>

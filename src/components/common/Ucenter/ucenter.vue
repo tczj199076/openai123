@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 import { computed, ref, watch } from 'vue'
-import { NButton, NInput, NModal } from 'naive-ui'
+import { NButton, NInput, NModal, useMessage } from 'naive-ui'
 import { getToken } from '@/store/modules/auth/helper'
 // import { useBasicLayout } from '@/hooks/useBasicLayout'
 interface Emit {
@@ -13,6 +13,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emit>()
+const msg = useMessage()
 
 const ucenter = computed({
   get: () => props.visible,
@@ -43,6 +44,40 @@ watch(() => props.visible, (newVal) => {
 
 // 移动端自适应相关
 // const { isMobile } = useBasicLayout()
+
+// 下载图片
+function downloadImage(url: string) {
+  const xhr = new XMLHttpRequest()
+  xhr.open('GET', url, true)
+  xhr.responseType = 'blob'
+  xhr.onload = () => {
+    if (xhr.status === 200) {
+      const blob = xhr.response
+      const a = document.createElement('a')
+      a.download = '推广二维码.png'
+      a.href = URL.createObjectURL(blob)
+      a.click()
+    }
+  }
+  xhr.send()
+}
+
+// 下载二维码
+function downloadQRCode() {
+  const qrImg = document.querySelector('#qrImg')
+  if (!qrImg)
+    return
+  const url = qrImg.getAttribute('src')
+  if (url)
+    downloadImage(url)
+}
+
+// 复制链接
+function copyLink(link: string) {
+  const textBlob = new Blob([link], { type: 'text/plain' }) // 将链接转换为Blob对象
+  navigator.clipboard.write([new ClipboardItem({ 'text/plain': textBlob })]) // 将Blob对象复制到剪贴板
+  msg.success('复制成功')
+}
 </script>
 
 <template>
@@ -93,23 +128,26 @@ watch(() => props.visible, (newVal) => {
           <p class="lead dark:text-black" style="font-weight:bold">
             我的推广员
           </p>
-          <div class="row justify-content-between align-items-center text-md-center text-lg-left mt-5">
-            <div class="col-lg-6">
-              <div class="font-weight-light text-dark">
-                <img class="mx-auto d-block" src="https://bj.bcebos.com/qr-code/2304261188ccd46b05c3.jpg" style="width:120px;height:120px">
+          <div v-if="loaded && data">
+            <div class="row justify-content-between align-items-center text-md-center text-lg-left mt-5">
+              <div class="col-lg-6">
+                <div class="font-weight-light text-dark">
+                  <img id="qrImg" ref="qrImg" class="mx-auto d-block" :src="data?.data?.info?.publicity?.url_image" style="width:120px;height:120px">
+                </div>
+                <!-- 添加点击事件 -->
+                <p class="mt-3 text-center mx-auto" style="width:50%">
+                  <NButton type="info" block @click="downloadQRCode">
+                    下载二维码
+                  </NButton>
+                </p>
               </div>
-              <p class="mt-3 text-center mx-auto" style="width:50%">
-                <NButton type="info" block>
-                  下载二维码
-                </NButton>
-              </p>
-            </div>
-            <div class="col-lg-6">
-              <div class="font-weight-light text-dark">
-                <NInput readonly="readonly" style="width:70%" class="mx-auto" value="https://wwww.openai123.vip/" />
-                <NButton type="info">
-                  复制链接
-                </NButton>
+              <div class="col-lg-6">
+                <div class="font-weight-light text-dark">
+                  <NInput id="linkInput" readonly="readonly" style="width:70%" class="mx-auto" :value="data.data.info.publicity.url" />
+                  <NButton type="info" @click="copyLink(data.data.info.publicity.url)">
+                    复制链接
+                  </NButton>
+                </div>
               </div>
             </div>
           </div>

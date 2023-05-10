@@ -95,7 +95,7 @@ async function onConversation() {
       +uuid,
       {
         dateTime: new Date().toLocaleString(),
-        text: '尊敬的主人，您的试用次数已用完，您可以选择明天登录试用，或者您选择购买订阅支持我~mua<button  style="padding:2px 5px 2px 5px;background:#0d6efd;color:#fff;border-radius:5px" onclick="document.querySelector(\'#buy_vip\').click()" >支持一下</button>',
+        text: '尊敬的主人，您的试用次数已用完，您可以选择明天登录试用，或者您选择购买订阅支持我~mua<button  style="padding:2px 5px 2px 5px;background:#fc5517;color:#fff;border-radius:5px" onclick="document.querySelector(\'#buy_vip\').click()" >支持一下</button>',
         inversion: false,
         error: false,
         conversationOptions: null,
@@ -290,7 +290,7 @@ async function onRegenerate(index: number) {
       +uuid,
       {
         dateTime: new Date().toLocaleString(),
-        text: '尊敬的主人，您的试用次数已用完，您可以选择明天登录试用，或者您选择购买订阅支持我~mua<button  style="padding:2px 5px 2px 5px;background:#0d6efd;color:#fff;border-radius:5px" onclick="document.querySelector(\'#buy_vip\').click()" >支持一下</button>',
+        text: '尊敬的主人，您的试用次数已用完，您可以选择明天登录试用，或者您选择购买订阅支持我~mua<button  style="padding:2px 5px 2px 5px;background:#fc5517;color:#fff;border-radius:5px" onclick="document.querySelector(\'#buy_vip\').click()" >支持一下</button>',
         inversion: false,
         error: false,
         conversationOptions: null,
@@ -633,7 +633,7 @@ function copyText(event: MouseEvent): void {
 </script>
 
 <template>
-  <div style="width:100%;height:100%;background: linear-gradient(to bottom right, #728da8, #abadb9);">
+  <div style="width:100%;height:100%;background: linear-gradient(to bottom right, #395168, #abadb9);">
     <div v-if="hasLogin" class="flex flex-col w-full h-full">
       <HeaderComponent
         v-if="isMobile"
