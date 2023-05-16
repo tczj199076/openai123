@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { computed, onMounted, ref, watchEffect } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { NButton, NInput, NModal, NTabPane, NTabs, useMessage } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchLogin, fetchRegister, fetchResetPassword, fetchSendResetMail, fetchVerify, fetchVerifyAdmin } from '@/api'
@@ -223,23 +223,15 @@ async function handleResetPassword() {
     loading.value = false
   }
 }
-watchEffect(() => {
-  const mobileFromParam = route.query.mobileFrom as string
-  const fromUserParam = route.query.fromUser as string
+watch(() => route.query.mobileFrom, (value) => {
+  mobileFrom.value = value as string || ''
 
-  if (mobileFromParam) {
-    // 执行mobileFrom相关操作
+  if (mobileFrom.value) {
     // 获取目标按钮元素
     const button: HTMLButtonElement | null = document.querySelector('#registerButton')
     // 模拟点击操作
     if (button)
       button.click()
-  }
-
-  if (fromUserParam) {
-    // 执行fromUser相关操作
-    localStorage.setItem('inviteCode', fromUserParam)
-    invite.value = fromUserParam
   }
 })
 </script>

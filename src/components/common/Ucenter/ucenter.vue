@@ -86,7 +86,7 @@ function copyLink(link: string) {
       <div class="col-md-12">
         <div class="col p-4 d-flex flex-column position-static">
           <p class="lead dark:text-black" style="font-weight:bold">
-            我的余额<span style="font-size:14px;color:#ddd">(提现功能尽情期待，目前余额可用于套餐抵扣)</span>
+            我的余额<span style="font-size:14px;color:#ddd">(提现功能尽请期待，目前余额可用于套餐抵扣)</span>
           </p>
           <p v-if="loaded && data" class=" fs-2" style="color:#fc5517">
             ￥{{ data.data.info.balance }}

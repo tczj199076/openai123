@@ -141,5 +141,6 @@ export default {
     vip: '购买订阅',
     ucenter: '个人中心',
     help: '帮助中心',
+    tips: '提示词商店',
   },
 }

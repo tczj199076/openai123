@@ -50,6 +50,7 @@ const loading = ref<boolean>(false)
 const inputRef = ref<Ref | null>(null)
 const showPrompt = ref(false)
 const hasLogin = ref<boolean>(false)
+const iframe = ref<string>('')
 
 let loadingms: MessageReactive
 let allmsg: MessageReactive
@@ -80,16 +81,19 @@ async function onConversation() {
     body: formData,
   })
   const userinfo = await response.json()
+  if (userinfo.code === 2)
+    ms.error('用户验证失败，请重新登录或联系管理员')
+
   // 这里开始存入localstorage，把次数和vip保存下
-  localStorage.setItem('is_vip', userinfo.data.info.is_vip)
   if (userinfo.code === 0) {
+    localStorage.setItem('is_vip', userinfo.data.info.is_vip)
     if (userinfo.data.info.is_vip === 2)
       localStorage.setItem('message_count', '-1')
     else
-      localStorage.setItem('message_count', userinfo.data.info.month_count + userinfo.data.info.tmp_count)
+      localStorage.setItem('message_count', userinfo.data.info.month_count + userinfo.data.info.tmp_count + userinfo.data.info.gift_count)
   }
   else {
-    localStorage.setItem('message_count', userinfo.data.info.month_count + userinfo.data.info.tmp_count)
+    localStorage.setItem('message_count', userinfo.data.info.month_count + userinfo.data.info.tmp_count + userinfo.data.info.gift_count)
     // 这里直接返回，不请求
     addChat(
       +uuid,
@@ -275,16 +279,19 @@ async function onRegenerate(index: number) {
     body: formData,
   })
   const userinfo = await response.json()
+  if (userinfo.code === 2)
+    ms.error('用户验证失败，请重新登录或联系管理员')
+
   // 这里开始存入localstorage，把次数和vip保存下
-  localStorage.setItem('is_vip', userinfo.data.info.is_vip)
   if (userinfo.code === 0) {
+    localStorage.setItem('is_vip', userinfo.data.info.is_vip)
     if (userinfo.data.info.is_vip === 2)
       localStorage.setItem('message_count', '-1')
     else
-      localStorage.setItem('message_count', userinfo.data.info.month_count + userinfo.data.info.tmp_count)
+      localStorage.setItem('message_count', userinfo.data.info.month_count + userinfo.data.info.tmp_count + userinfo.data.info.gift_count)
   }
   else {
-    localStorage.setItem('message_count', userinfo.data.info.month_count + userinfo.data.info.tmp_count)
+    localStorage.setItem('message_count', userinfo.data.info.month_count + userinfo.data.info.tmp_count + userinfo.data.info.gift_count)
     // 这里直接返回，不请求
     addChat(
       +uuid,
@@ -604,8 +611,13 @@ const footerClass = computed(() => {
 })
 
 onMounted(() => {
-  if (localStorage.getItem('SECRET_TOKEN'))
+  if (localStorage.getItem('SECRET_TOKEN')) {
     hasLogin.value = true
+    iframe.value = 'about:blank'
+  }
+  else {
+    iframe.value = 'https://demo.openai123.vip/'
+  }
   firstLoading.value = true
   handleSyncChat()
 })
@@ -633,7 +645,7 @@ function copyText(event: MouseEvent): void {
 </script>
 
 <template>
-  <div style="width:100%;height:100%;background: linear-gradient(to bottom right, #395168, #abadb9);">
+  <div id="aaa" style="width:100%;height:100%;background: linear-gradient(to bottom right, #395168, #abadb9);">
     <div v-if="hasLogin" class="flex flex-col w-full h-full">
       <HeaderComponent
         v-if="isMobile"
@@ -820,7 +832,7 @@ function copyText(event: MouseEvent): void {
       </footer>
       <Prompt v-if="showPrompt" v-model:roomId="uuid" v-model:visible="showPrompt" />
     </div>
-    <iframe v-else style="width: 100%;height: 100%" src="https://demo.openai123.vip/" />
+    <iframe v-else style="width: 100%;height: 100%" :src="iframe" />
   </div>
 </template>
 

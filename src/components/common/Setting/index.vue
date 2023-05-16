@@ -41,7 +41,7 @@ const show = computed({
 </script>
 
 <template>
-  <NModal v-model:show="show" :auto-focus="false" preset="card" style="width: 95%; max-width: 1024px">
+  <NModal v-model:show="show" :auto-focus="false" preset="card" style="width: 95%; max-width: 1024px;background: linear-gradient(to bottom right, #395168, #abadb9);">
     <div>
       <NTabs v-model:value="active" type="line" animated>
         <NTabPane name="General" tab="General">

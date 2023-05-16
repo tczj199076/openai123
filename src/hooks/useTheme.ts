@@ -24,6 +24,7 @@ export function useTheme() {
       return {
         common: {
           // bodyColor: '#8a9bafFF',
+          fontFamily: 'v-sans, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol',
         },
         Button: {
           textColorInfo: '#FFFFFFFF',
@@ -54,6 +55,15 @@ export function useTheme() {
           barColor: '#fc5517FF',
           tabTextColorActiveCard: '#fc5517FF',
           tabTextColorActiveBar: '#fc5517FF',
+          color: '#AE3165FF',
+        },
+        Card: {
+          color: '#FFFFFFFF',
+          colorModal: '#FFFFFFFFF',
+        },
+        Layout: {
+          siderColor: '#FFFFFF00',
+          color: '#FFFFFF00',
         },
 
       }

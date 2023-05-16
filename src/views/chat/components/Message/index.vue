@@ -4,9 +4,9 @@ import { NPopover, useMessage } from 'naive-ui'
 import AvatarComponent from './Avatar.vue'
 import TextComponent from './Text.vue'
 import { SvgIcon } from '@/components/common'
-import { useIconRender } from '@/hooks/useIconRender'
+// import { useIconRender } from '@/hooks/useIconRender'
 import { t } from '@/locales'
-import { useBasicLayout } from '@/hooks/useBasicLayout'
+// import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { copyToClip } from '@/utils/copy'
 
 interface Props {
@@ -32,9 +32,9 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<Emit>()
 
-const { isMobile } = useBasicLayout()
+// const { isMobile } = useBasicLayout()
 
-const { iconRender } = useIconRender()
+// const { iconRender } = useIconRender()
 
 const message = useMessage()
 
