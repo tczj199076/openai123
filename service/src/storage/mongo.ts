@@ -1,7 +1,8 @@
 import { MongoClient, ObjectId } from 'mongodb'
 import * as dotenv from 'dotenv'
-import { ChatInfo, ChatRoom, ChatUsage, Status, UserInfo } from './model'
-import type { ChatOptions, Config, UsageResponse } from './model'
+import dayjs from 'dayjs'
+import { ChatInfo, ChatRoom, ChatUsage, Status, UserConfig, UserInfo } from './model'
+import type { CHATMODEL, ChatOptions, Config, UsageResponse } from './model'
 
 dotenv.config()
 
@@ -94,6 +95,17 @@ export async function updateRoomPrompt(userId: string, roomId: number, prompt: s
   return result.modifiedCount > 0
 }
 
+export async function updateRoomUsingContext(userId: string, roomId: number, using: boolean) {
+  const query = { userId, roomId }
+  const update = {
+    $set: {
+      usingContext: using,
+    },
+  }
+  const result = await roomCol.updateOne(query, update)
+  return result.modifiedCount > 0
+}
+
 export async function getChatRooms(userId: string) {
   const cursor = await roomCol.find({ userId, status: { $ne: Status.Deleted } })
   const rooms = []
@@ -180,6 +192,11 @@ export async function updateUserInfo(userId: string, user: UserInfo) {
     , { $set: { name: user.name, description: user.description, avatar: user.avatar } })
 }
 
+export async function updateUserChatModel(userId: string, chatModel: CHATMODEL) {
+  return userCol.updateOne({ _id: new ObjectId(userId) }
+    , { $set: { 'config.chatModel': chatModel } })
+}
+
 export async function updateUserPassword(userId: string, password: string) {
   return userCol.updateOne({ _id: new ObjectId(userId) }
     , { $set: { password, updateTime: new Date().toLocaleString() } })
@@ -191,7 +208,12 @@ export async function getUser(email: string): Promise<UserInfo> {
 }
 
 export async function getUserById(userId: string): Promise<UserInfo> {
-  return await userCol.findOne({ _id: new ObjectId(userId) }) as UserInfo
+  const userInfo = await userCol.findOne({ _id: new ObjectId(userId) }) as UserInfo
+  if (userInfo.config == null) {
+    userInfo.config = new UserConfig()
+    userInfo.config.chatModel = 'gpt-3.5-turbo'
+  }
+  return userInfo
 }
 
 export async function verifyUser(email: string, status: Status) {
@@ -210,4 +232,73 @@ export async function updateConfig(config: Config): Promise<Config> {
   if (result.matchedCount > 0 && result.modifiedCount <= 0 && result.upsertedCount <= 0)
     return config
   return null
+}
+
+export async function getUserStatisticsByDay(userId: ObjectId, start: number, end: number): Promise<any> {
+  const pipeline = [
+    { // filter by dateTime
+      $match: {
+        dateTime: {
+          $gte: start,
+          $lte: end,
+        },
+        userId,
+      },
+    },
+    { // convert dateTime to date
+      $addFields: {
+        date: {
+          $dateToString: {
+            format: '%Y-%m-%d',
+            date: {
+              $toDate: '$dateTime',
+            },
+          },
+        },
+      },
+    },
+    { // group by date
+      $group: {
+        _id: '$date',
+        promptTokens: {
+          $sum: '$promptTokens',
+        },
+        completionTokens: {
+          $sum: '$completionTokens',
+        },
+        totalTokens: {
+          $sum: '$totalTokens',
+        },
+      },
+    },
+    { // sort by date
+      $sort: {
+        _id: 1,
+      },
+    },
+  ]
+
+  const aggStatics = await usageCol.aggregate(pipeline).toArray()
+
+  const step = 86400000 // 1 day in milliseconds
+  const result = {
+    promptTokens: null,
+    completionTokens: null,
+    totalTokens: null,
+    chartData: [],
+  }
+  for (let i = start; i <= end; i += step) {
+    // Convert the timestamp to a Date object
+    const date = dayjs(i, 'x').format('YYYY-MM-DD')
+
+    const dateData = aggStatics.find(x => x._id === date)
+      || { _id: date, promptTokens: 0, completionTokens: 0, totalTokens: 0 }
+
+    result.promptTokens += dateData.promptTokens
+    result.completionTokens += dateData.completionTokens
+    result.totalTokens += dateData.totalTokens
+    result.chartData.push(dateData)
+  }
+
+  return result
 }
