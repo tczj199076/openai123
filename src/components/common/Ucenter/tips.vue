@@ -73,7 +73,7 @@ async function copyToClipboard(content: string, id: number) {
 
 function formatDesc(desc: string) {
   const regex = /{([^}]+)}/g
-  return desc.replace(regex, '<span style="color:#ff7220;display:inline;border: 1px solid;padding: 0px 3px 0px 3px;margin: 0 5px 0 5px;">$1</span>')
+  return desc.replace(regex, '<span style="color:#f19d6c;display:inline;border: 1px solid;padding: 0px 3px 0px 3px;margin: 0 5px 0 5px;">$1</span>')
 }
 </script>
 
@@ -95,7 +95,8 @@ function formatDesc(desc: string) {
             :segmented="{
               content: true,
               footer: 'soft',
-            }" :title="content.title" class="text-xs" hoverable @click="copyToClipboard(content.desc, content.id)"
+            }" :title="content.title" class="text-xs" hoverable style="background: linear-gradient(to bottom right, #728da8, #abadb9);"
+            @click="copyToClipboard(content.desc, content.id)"
           >
             <template #header>
               {{ content.title }}

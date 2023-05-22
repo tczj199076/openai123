@@ -105,6 +105,21 @@ function handleCategoryClick(category: Category) {
 function isActive(category: Category): boolean {
   return state.activeCategory?.id === category.id
 }
+
+async function handleArticleClick(id: number) {
+  try {
+    const formData = new FormData()
+    formData.append('token', getToken())
+    formData.append('id', id.toString())
+    await fetch('https://cms.openai123.vip/api/help/getContent', {
+      method: 'POST',
+      body: formData,
+    })
+  }
+  catch (error) {
+    console.error(error)
+  }
+}
 </script>
 
 <template>
@@ -143,6 +158,7 @@ function isActive(category: Category): boolean {
                 :key="index"
                 :name="article.id.toString()"
                 :title="article.title"
+                @click="handleArticleClick(article.id)"
               >
                 <div v-html="article.content" />
               </NCollapseItem>
@@ -159,9 +175,3 @@ function isActive(category: Category): boolean {
     </NSpace>
   </NModal>
 </template>
-
-  <style scoped>
-  .n-card {
-    max-width: 250px;
-  }
-  </style>

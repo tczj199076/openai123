@@ -135,6 +135,7 @@ async function handleLogin() {
     formData.append('token', result.data.token)
     const inviteCode = localStorage.getItem('inviteCode') ?? ''
     formData.append('inviteCode', inviteCode)
+    formData.append('email', name)
 
     const response = await fetch('https://cms.openai123.vip/api/login', {
       method: 'POST',

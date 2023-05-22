@@ -52,7 +52,7 @@ async function handleSaveChatRoomPrompt() {
 <template>
   <NModal
     v-model:show="show" :auto-focus="false" class="custom-card" preset="card" :style="{ width: '600px' }" :title="title" size="huge"
-    :bordered="false"
+    :bordered="false" style="background: linear-gradient(to bottom right, #728da8, #abadb9);"
   >
     <!-- <template #header-extra>
       噢!
@@ -60,11 +60,11 @@ async function handleSaveChatRoomPrompt() {
     <NInput
       :value="currentChatHistory && currentChatHistory.prompt"
       type="textarea"
-      :autosize="{ minRows: 4, maxRows: 10 }" placeholder="请用一句话描述该聊天的AI角色，如'你现在是一个PHP开发工程师，请以PHP开发工程师角色回答我的问题。'" @input="(val) => { if (currentChatHistory) currentChatHistory.prompt = val }"
+      :autosize="{ minRows: 4, maxRows: 10 }" placeholder="请描述当前的AI角色，示例参考：你是一个专业的程序员，精通任何语言程序，会帮助用户解决任何代码上的问题，并帮他们查找程序漏洞。'" @input="(val) => { if (currentChatHistory) currentChatHistory.prompt = val }"
     />
     <template #footer>
       <NSpace justify="end">
-        <NButton :loading="testing" type="success" @click="handleSaveChatRoomPrompt">
+        <NButton :loading="testing" type="warning" @click="handleSaveChatRoomPrompt">
           {{ t('common.save') }}
         </NButton>
       </NSpace>

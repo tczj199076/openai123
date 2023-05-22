@@ -165,10 +165,10 @@ const currentItem = ref<Product | null>(null)
     <!-- 初次加载时 -->
     <div v-else>
       <div class="pricing-header  px-3 py-3 pt-md-3 pb-md-3 mx-auto text-center">
-        <p class="lead fs-2 dark:text-black">
+        <p class="lead fs-2 dark:text-black" style="font-weight:bold">
           开通会员，获取AI聊天权限
         </p>
-        <p class="lead dark:text-black">
+        <p class="lead dark:text-black" style="font-weight:bold">
           不同套餐，发送的消息次数不同。
         </p>
       </div>

@@ -96,7 +96,7 @@ export const useChatStore = defineStore('chat-store', {
               tmp = {
                 uuid: 1682588796913,
                 dateTime: formattedDate,
-                text: '尊敬的主人，登录成功，我已为你赠送5次提问次数。以后每天登录将固定赠送2次/天。请开始你的提问吧~',
+                text: `尊敬的主人，登录成功，我已为你赠送${responseJson.data.register_gift_num}次提问次数。以后每天登录将固定赠送${responseJson.data.login_gift_num}次/天。请开始你的提问吧~`,
                 inversion: false,
                 error: false,
                 conversationOptions: null,
@@ -113,7 +113,7 @@ export const useChatStore = defineStore('chat-store', {
               tmp = {
                 uuid: 1682588796913,
                 dateTime: formattedDate,
-                text: '尊敬的主人，登录成功。今天免费为您赠送2次。请开始你的提问吧~',
+                text: `尊敬的主人，登录成功。今天免费为您赠送${responseJson.data.login_gift_num}次。请开始你的提问吧~`,
                 inversion: false,
                 error: false,
                 conversationOptions: null,
