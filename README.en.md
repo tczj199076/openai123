@@ -19,6 +19,10 @@
 
 [✓] Set unique prompts for each chat room
 
+[✓] Users manager
+
+[✓] Random Key
+
 </br>
 
 ## Screenshots
@@ -29,6 +33,8 @@
 ![cover2](./docs/c2.png)
 ![cover3](./docs/basesettings.jpg)
 ![cover3](./docs/prompt_en.jpg)
+![cover3](./docs/user-manager.jpg)
+![cover3](./docs/key-manager-en.jpg)
 
 - [ChatGPT Web](#chatgpt-web)
 	- [Introduction](#introduction)
