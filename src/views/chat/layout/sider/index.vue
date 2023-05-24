@@ -1,12 +1,13 @@
 <script setup lang='ts'>
 import type { CSSProperties } from 'vue'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { NButton, NLayoutSider } from 'naive-ui'
 import List from './List.vue'
 import Footer from './Footer.vue'
 import { useAppStore, useAuthStore, useChatStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { Help, Tips, Ucenter, Vip } from '@/components/common'
+import { Donation, Help, Tips, Ucenter, Vip } from '@/components/common'
+import { getToken } from '@/store/modules/auth/helper'
 
 const appStore = useAppStore()
 const authStore = useAuthStore()
@@ -17,7 +18,23 @@ const vip = ref(false)
 const ucenter = ref(false)
 const help = ref(false)
 const tips = ref(false)
+const donation = ref(false)
 // const show = ref(false)
+
+const state = reactive({
+  status: 0,
+})
+
+onMounted(async () => {
+  const formData = new FormData()
+  formData.append('token', getToken())
+  const response = await fetch('https://cms.openai123.vip/api/isVipOpen', {
+    method: 'POST',
+    body: formData,
+  })
+  const result = await response.json()
+  state.status = result.data.info.status
+})
 
 const collapsed = computed(() => appStore.siderCollapsed)
 
@@ -86,8 +103,11 @@ watch(
         <div>
           <div v-if="!!authStore.session?.auth && !authStore.token" />
           <div v-else v-show="authStore.session?.auth" class="p-4 " style="display: grid; grid-template-rows: repeat(3, auto); gap: 10px;">
-            <NButton id="buy_vip" type="warning" dark:text-white block @click="vip = true">
+            <NButton v-if="state.status === 1" id="buy_vip" type="warning" dark:text-white block @click="vip = true">
               {{ $t('store.vip') }}
+            </NButton>
+            <NButton v-else type="warning" dark:text-white block @click="donation = true">
+              {{ $t('store.donation') }}
             </NButton>
             <NButton type="warning" dark:text-white block @click="ucenter = true">
               {{ $t('store.ucenter') }}
@@ -115,4 +135,5 @@ watch(
   <Ucenter v-model:visible="ucenter" />
   <Help v-model:visible="help" />
   <Tips v-model:visible="tips" />
+  <Donation v-model:visible="donation" />
 </template>

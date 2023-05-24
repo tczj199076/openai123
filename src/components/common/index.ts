@@ -8,5 +8,6 @@ import Vip from './Ucenter/vip.vue'
 import Ucenter from './Ucenter/ucenter.vue'
 import Help from './Ucenter/help.vue'
 import Tips from './Ucenter/tips.vue'
+import Donation from './Ucenter/donation.vue'
 
-export { HoverButton, NaiveProvider, SvgIcon, UserAvatar, Setting, PromptStore, Vip, Ucenter, Help, Tips }
+export { HoverButton, NaiveProvider, SvgIcon, UserAvatar, Setting, PromptStore, Vip, Ucenter, Help, Tips, Donation }

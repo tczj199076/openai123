@@ -142,5 +142,6 @@ export default {
     ucenter: '个人中心',
     help: '帮助中心',
     tips: '提示词商店',
+    donation: '捐献我们',
   },
 }
