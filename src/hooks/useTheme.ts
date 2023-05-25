@@ -25,6 +25,8 @@ export function useTheme() {
         common: {
           // bodyColor: '#8a9bafFF',
           fontFamily: 'v-sans, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol',
+          primaryColor: '#ff7220FF',
+          primaryColorHover: '#f19d6cFF',
         },
         Button: {
           textColorInfo: '#FFFFFFFF',

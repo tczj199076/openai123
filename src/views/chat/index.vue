@@ -4,23 +4,23 @@ import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref, 
 import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import type { MessageReactive } from 'naive-ui'
-import { NAutoComplete, NButton, NInput, NSpin, useDialog, useMessage } from 'naive-ui'
+import { NAutoComplete, NButton, NInput, NSelect, NSpace, NSpin, useDialog, useMessage } from 'naive-ui'
 import html2canvas from 'html2canvas'
 import { Message } from './components'
 import { useScroll } from './hooks/useScroll'
 import { useChat } from './hooks/useChat'
-import { useUsingContext } from './hooks/useUsingContext'
 import HeaderComponent from './components/Header/index.vue'
-
 import { HoverButton, SvgIcon } from '@/components/common'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { useAuthStore, useChatStore, usePromptStore } from '@/store'
-import { fetchChatAPIProcess } from '@/api'
+import { useAuthStore, useChatStore, usePromptStore, useUserStore } from '@/store'
+import { fetchChatAPIProcess, fetchChatResponseoHistory, fetchUpdateUserChatModel } from '@/api'
 import { t } from '@/locales'
 import { debounce } from '@/utils/functions/debounce'
 import IconPrompt from '@/icons/Prompt.vue'
 import { getToken } from '@/store/modules/auth/helper'
 
+import { UserConfig } from '@/components/common/Setting/model'
+import type { CHATMODEL } from '@/components/common/Setting/model'
 const Prompt = defineAsyncComponent(() => import('@/components/common/Setting/Prompt.vue'))
 
 let controller = new AbortController()
@@ -31,16 +31,17 @@ const route = useRoute()
 const dialog = useDialog()
 const ms = useMessage()
 const authStore = useAuthStore()
-
+const userStore = useUserStore()
 const chatStore = useChatStore()
 
 const { isMobile } = useBasicLayout()
 const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
 const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom, scrollTo } = useScroll()
-const { usingContext, toggleUsingContext } = useUsingContext()
 
 const { uuid } = route.params as { uuid: string }
 
+const currentChatHistory = computed(() => chatStore.getChatHistoryByCurrentActive)
+const usingContext = computed(() => currentChatHistory?.value?.usingContext ?? true)
 const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
 const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !!item.conversationOptions)))
 
@@ -314,6 +315,8 @@ async function onRegenerate(index: number) {
   controller = new AbortController()
 
   const { requestOptions } = dataSources.value[index]
+  let responseCount = dataSources.value[index].responseCount || 1
+  responseCount++
 
   let message = requestOptions?.prompt ?? ''
 
@@ -331,6 +334,7 @@ async function onRegenerate(index: number) {
       dateTime: new Date().toLocaleString(),
       text: '',
       inversion: false,
+      responseCount,
       error: false,
       loading: true,
       conversationOptions: null,
@@ -372,6 +376,7 @@ async function onRegenerate(index: number) {
                 dateTime: new Date().toLocaleString(),
                 text: lastText + (data.text ?? ''),
                 inversion: false,
+                responseCount,
                 error: false,
                 loading: true,
                 conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
@@ -417,6 +422,7 @@ async function onRegenerate(index: number) {
         dateTime: new Date().toLocaleString(),
         text: errorMessage,
         inversion: false,
+        responseCount,
         error: true,
         loading: false,
         conversationOptions: null,
@@ -427,6 +433,25 @@ async function onRegenerate(index: number) {
   finally {
     loading.value = false
   }
+}
+
+async function onResponseHistory(index: number, historyIndex: number) {
+  const chat = (await fetchChatResponseoHistory(+uuid, dataSources.value[index].uuid || Date.now(), historyIndex)).data
+  updateChat(
+    +uuid,
+    index,
+    {
+      dateTime: chat.dateTime,
+      text: chat.text,
+      inversion: false,
+      responseCount: chat.responseCount,
+      error: true,
+      loading: false,
+      conversationOptions: chat.conversationOptions,
+      requestOptions: { prompt: chat.requestOptions.prompt, options: { ...chat.requestOptions.options } },
+      usage: chat.usage,
+    },
+  )
 }
 
 function handleExport() {
@@ -567,6 +592,18 @@ async function handleScroll(event: any) {
   prevScrollTop = scrollTop
 }
 
+async function handleToggleUsingContext() {
+  if (!currentChatHistory.value)
+    return
+
+  currentChatHistory.value.usingContext = !currentChatHistory.value.usingContext
+  chatStore.setUsingContext(currentChatHistory.value.usingContext, +uuid)
+  if (currentChatHistory.value.usingContext)
+    ms.success(t('chat.turnOnContext'))
+  else
+    ms.warning(t('chat.turnOffContext'))
+}
+
 // 可优化部分
 // 搜索选项计算，这里使用value作为索引项，所以当出现重复value时渲染异常(多项同时出现选中效果)
 // 理想状态下其实应该是key作为索引项,但官方的renderOption会出现问题，所以就需要value反renderLabel实现
@@ -610,6 +647,14 @@ const footerClass = computed(() => {
   return classes
 })
 
+async function handleSyncChatModel(chatModel: CHATMODEL) {
+  if (userStore.userInfo.config == null)
+    userStore.userInfo.config = new UserConfig()
+  userStore.userInfo.config.chatModel = chatModel
+  userStore.recordState()
+  await fetchUpdateUserChatModel(chatModel)
+}
+
 onMounted(() => {
   if (localStorage.getItem('SECRET_TOKEN')) {
     hasLogin.value = true
@@ -651,7 +696,7 @@ function copyText(event: MouseEvent): void {
         v-if="isMobile"
         :using-context="usingContext"
         :show-prompt="showPrompt"
-        @export="handleExport" @toggle-using-context="toggleUsingContext"
+        @export="handleExport" @toggle-using-context="handleToggleUsingContext"
         @toggle-show-prompt="showPrompt = true"
       />
       <main class="flex-1 overflow-hidden">
@@ -761,11 +806,13 @@ function copyText(event: MouseEvent): void {
                     :date-time="item.dateTime"
                     :text="item.text"
                     :inversion="item.inversion"
+                    :response-count="item.responseCount"
                     :usage="item && item.usage || undefined"
                     :error="item.error"
                     :loading="item.loading"
                     @regenerate="onRegenerate(index)"
                     @delete="handleDelete(index)"
+                    @response-history="(ev) => onResponseHistory(index, ev)"
                   />
                   <div class="sticky bottom-0 left-0 flex justify-center">
                     <NButton v-if="loading" type="warning" @click="handleStop">
@@ -783,51 +830,62 @@ function copyText(event: MouseEvent): void {
       </main>
       <footer :class="footerClass">
         <div class="w-full max-w-screen-xl m-auto">
-          <div class="flex items-center justify-between space-x-2">
-            <HoverButton @click="handleClear">
-              <span class="text-xl text-[#4f555e] dark:text-white">
-                <SvgIcon icon="ri:delete-bin-line" />
-              </span>
-            </HoverButton>
-            <HoverButton v-if="!isMobile" @click="handleExport">
-              <span class="text-xl text-[#4f555e] dark:text-white">
-                <SvgIcon icon="ri:download-2-line" />
-              </span>
-            </HoverButton>
-            <HoverButton v-if="!isMobile" @click="showPrompt = true">
-              <span class="text-xl text-[#4f555e] dark:text-white">
-                <IconPrompt class="w-[20px] m-auto" />
-              </span>
-            </HoverButton>
-            <HoverButton v-if="!isMobile" @click="toggleUsingContext">
-              <span class="text-xl" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }">
-                <SvgIcon icon="ri:chat-history-line" />
-              </span>
-            </HoverButton>
-            <NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
-              <template #default="{ handleInput, handleBlur, handleFocus }">
-                <NInput
-                  ref="inputRef"
-                  v-model:value="prompt"
-                  :disabled="!!authStore.session?.auth && !authStore.token"
-                  type="textarea"
-                  :placeholder="placeholder"
-                  :autosize="{ minRows: 1, maxRows: isMobile ? 4 : 8 }"
-                  @input="handleInput"
-                  @focus="handleFocus"
-                  @blur="handleBlur"
-                  @keypress="handleEnter"
-                />
-              </template>
-            </NAutoComplete>
-            <NButton type="warning" :disabled="buttonDisabled" @click="handleSubmit">
-              <template #icon>
-                <span class="dark:text-white">
-                  <SvgIcon icon="ri:send-plane-fill" />
+          <NSpace vertical>
+            <div class="flex items-center space-x-2">
+              <HoverButton @click="handleClear">
+                <span class="text-xl text-[#4f555e] dark:text-white">
+                  <SvgIcon icon="ri:delete-bin-line" />
                 </span>
-              </template>
-            </NButton>
-          </div>
+              </HoverButton>
+              <HoverButton v-if="!isMobile" @click="handleExport">
+                <span class="text-xl text-[#4f555e] dark:text-white">
+                  <SvgIcon icon="ri:download-2-line" />
+                </span>
+              </HoverButton>
+              <HoverButton v-if="!isMobile" @click="showPrompt = true">
+                <span class="text-xl text-[#4f555e] dark:text-white">
+                  <IconPrompt class="w-[20px] m-auto" />
+                </span>
+              </HoverButton>
+              <HoverButton v-if="!isMobile" @click="handleToggleUsingContext">
+                <span class="text-xl" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }">
+                  <SvgIcon icon="ri:chat-history-line" />
+                </span>
+              </HoverButton>
+              <NSelect
+                style="width: 250px"
+                :value="userStore.userInfo.config.chatModel"
+                :options="authStore.session?.chatModels"
+                :disabled="!!authStore.session?.auth && !authStore.token"
+                @update-value="(val) => handleSyncChatModel(val)"
+              />
+            </div>
+            <div class="flex items-center justify-between space-x-2">
+              <NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
+                <template #default="{ handleInput, handleBlur, handleFocus }">
+                  <NInput
+                    ref="inputRef"
+                    v-model:value="prompt"
+                    :disabled="!!authStore.session?.auth && !authStore.token"
+                    type="textarea"
+                    :placeholder="placeholder"
+                    :autosize="{ minRows: isMobile ? 1 : 4, maxRows: isMobile ? 4 : 8 }"
+                    @input="handleInput"
+                    @focus="handleFocus"
+                    @blur="handleBlur"
+                    @keypress="handleEnter"
+                  />
+                </template>
+              </NAutoComplete>
+              <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
+                <template #icon>
+                  <span class="dark:text-black">
+                    <SvgIcon icon="ri:send-plane-fill" />
+                  </span>
+                </template>
+              </NButton>
+            </div>
+          </NSpace>
         </div>
       </footer>
       <Prompt v-if="showPrompt" v-model:roomId="uuid" v-model:visible="showPrompt" />
