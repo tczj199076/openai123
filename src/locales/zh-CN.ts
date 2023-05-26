@@ -140,6 +140,7 @@ export default {
     userRoles: '用户权限',
     status: '状态',
     chatModels: '对话模型',
+    remark: '备注',
   },
   store: {
     siderButton: '提示词商店',
