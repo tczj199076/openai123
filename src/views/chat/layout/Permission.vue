@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { NButton, NInput, NModal, NTabPane, NTabs, useMessage } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchLogin, fetchRegister, fetchResetPassword, fetchSendResetMail, fetchVerify, fetchVerifyAdmin } from '@/api'
@@ -144,8 +144,8 @@ async function handleLogin() {
     // 如果所有请求都成功了，才执行后续操作
     if (response.ok) {
       await authStore.setToken(result.data.token)
-      ms.success('登录成功')
-      router.go(0)
+      ms.success('success')
+      window.location.reload()
     }
     else {
       throw new Error('登录失败')
@@ -224,17 +224,6 @@ async function handleResetPassword() {
     loading.value = false
   }
 }
-watch(() => route.query.mobileFrom, (value) => {
-  mobileFrom.value = value as string || ''
-
-  if (mobileFrom.value) {
-    // 获取目标按钮元素
-    const button: HTMLButtonElement | null = document.querySelector('#registerButton')
-    // 模拟点击操作
-    if (button)
-      button.click()
-  }
-})
 </script>
 
 <!-- 判断是否是手机，如果是手机，则第一次登录不显示模态框，否则自动显示模态框 -->
