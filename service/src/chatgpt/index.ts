@@ -327,7 +327,7 @@ async function getMessageById(id: string): Promise<ChatMessage | undefined> {
 }
 
 const _lockedKeys: { key: string; count: number }[] = []
-const _oneTimeCount = 3 // api
+const _oneTimeCount = 10000 // api
 async function randomKeyConfig(keys: KeyConfig[]): Promise<KeyConfig | null> {
   if (keys.length <= 0)
     return null
