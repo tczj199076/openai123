@@ -7,7 +7,6 @@ import Footer from './Footer.vue'
 import { useAppStore, useAuthStore, useChatStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { Donation, Help, Tips, Ucenter, Vip } from '@/components/common'
-import { getToken } from '@/store/modules/auth/helper'
 
 const appStore = useAppStore()
 const authStore = useAuthStore()
@@ -26,11 +25,8 @@ const state = reactive({
 })
 
 onMounted(async () => {
-  const formData = new FormData()
-  formData.append('token', getToken())
   const response = await fetch('https://cms.openai123.vip/api/isVipOpen', {
     method: 'POST',
-    body: formData,
   })
   const result = await response.json()
   state.status = result.data.info.status

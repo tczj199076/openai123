@@ -703,7 +703,7 @@ function copyText(event: MouseEvent): void {
 
 <template>
   <div id="aaa" style="width:100%;height:100%;background: linear-gradient(to bottom right, #395168, #abadb9);">
-    <div v-if="hasLogin" class="flex flex-col w-full h-full">
+    <div v-if="hasLogin || isMobile" class="flex flex-col w-full h-full">
       <HeaderComponent
         v-if="isMobile"
         :using-context="usingContext"

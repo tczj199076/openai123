@@ -4,7 +4,6 @@ import { NButton, NInput, NModal, NTabPane, NTabs, useMessage } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchLogin, fetchRegister, fetchResetPassword, fetchSendResetMail, fetchVerify, fetchVerifyAdmin } from '@/api'
 import { useAuthStore } from '@/store'
-import { useBasicLayout } from '@/hooks/useBasicLayout'
 interface Props {
   visible: boolean
 }
@@ -33,8 +32,8 @@ const username = ref('')
 const password = ref('')
 
 const sign = ref('')
-const { isMobile } = useBasicLayout()
-const mobileFrom = ref('')
+// const { isMobile } = useBasicLayout()
+// const mobileFrom = ref('')
 
 const disabled = computed(() => !username.value.trim() || !password.value.trim() || loading.value)
 
@@ -228,7 +227,7 @@ async function handleResetPassword() {
 
 <!-- 判断是否是手机，如果是手机，则第一次登录不显示模态框，否则自动显示模态框 -->
 <template>
-  <NModal v-if="(isMobile && mobileFrom) || !isMobile" :show="visible" style="width: 90%; max-width: 440px">
+  <NModal :show="visible" style="width: 90%; max-width: 440px">
     <div class="p-10 bg-white rounded " style="background: linear-gradient(to bottom right, #728da8, #abadb9);">
       <div class="space-y-4">
         <header class="space-y-2">
