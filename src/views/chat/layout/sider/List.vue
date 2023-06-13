@@ -111,10 +111,10 @@ function isActive(uuid: number) {
                   </button>
                 </template>
                 <template v-else>
-                  <button class="p-1">
+                  <button v-if="authStore.token" class="p-1">
                     <SvgIcon icon="ri:edit-line" @click="handleEdit(item, true, $event)" />
                   </button>
-                  <NPopconfirm placement="bottom" @positive-click="handleDeleteDebounce(index, $event)">
+                  <NPopconfirm v-if="authStore.token" placement="bottom" @positive-click="handleDeleteDebounce(index, $event)">
                     <template #trigger>
                       <button class="p-1">
                         <SvgIcon icon="ri:delete-bin-line" />

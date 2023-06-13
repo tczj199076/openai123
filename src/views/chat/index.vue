@@ -51,8 +51,6 @@ const firstLoading = ref<boolean>(false)
 const loading = ref<boolean>(false)
 const inputRef = ref<Ref | null>(null)
 const showPrompt = ref(false)
-const hasLogin = ref<boolean>(false)
-const iframe = ref<string>('')
 
 let loadingms: MessageReactive
 let allmsg: MessageReactive
@@ -75,9 +73,13 @@ function handleSubmit() {
 }
 
 async function onConversation() {
-  // 开始之前 先请求一下接口，判断一下，如果没次数了，就return
+  // // 开始之前 先请求一下接口，判断一下，如果没次数了，就return
   const formData = new FormData()
-  formData.append('token', getToken())
+  let userToken = getToken()
+  if (!userToken)
+    userToken = ''
+
+  formData.append('token', userToken)
   const response = await fetch('https://cms.openai123.vip/api/chatVerify', {
     method: 'POST',
     body: formData,
@@ -96,12 +98,19 @@ async function onConversation() {
   }
   else {
     localStorage.setItem('message_count', userinfo.data.info.month_count + userinfo.data.info.tmp_count + userinfo.data.info.gift_count)
+    // 这里判断是否登录，如果未登录，就弹出其他对话框
+    let msgText = ''
+    if (!userToken)
+      msgText = `尊敬的主人，您的试用次数已用完。点击<button class="register" style="padding:2px 5px 2px 5px;background:#fc5517;color:#fff;border-radius:5px" onclick="document.querySelector('#registerButton').click()">注册</button>再赠送您${userinfo.data.info.register_gift_count}次提问次数`
+    else
+      msgText = '尊敬的主人，您的试用次数已用完，您可以选择明天登录试用，或者您选择购买订阅支持我~mua<button  style="padding:2px 5px 2px 5px;background:#fc5517;color:#fff;border-radius:5px" onclick="document.querySelector(\'#buy_vip\').click()" >支持一下</button>'
+
     // 这里直接返回，不请求
     addChat(
       +uuid,
       {
         dateTime: new Date().toLocaleString(),
-        text: '尊敬的主人，您的试用次数已用完，您可以选择明天登录试用，或者您选择购买订阅支持我~mua<button  style="padding:2px 5px 2px 5px;background:#fc5517;color:#fff;border-radius:5px" onclick="document.querySelector(\'#buy_vip\').click()" >支持一下</button>',
+        text: msgText,
         inversion: false,
         error: false,
         conversationOptions: null,
@@ -111,7 +120,7 @@ async function onConversation() {
     scrollToBottom()
     return
   }
-  // 结束
+  // // 结束
   let message = prompt.value
 
   if (loading.value)
@@ -662,13 +671,6 @@ async function handleSyncChatModel(chatModel: CHATMODEL) {
 }
 
 onMounted(() => {
-  if (localStorage.getItem('SECRET_TOKEN')) {
-    hasLogin.value = true
-    iframe.value = 'about:blank'
-  }
-  else {
-    iframe.value = 'https://demo.openai123.vip/'
-  }
   firstLoading.value = true
   handleSyncChat()
 
@@ -703,7 +705,7 @@ function copyText(event: MouseEvent): void {
 
 <template>
   <div id="aaa" style="width:100%;height:100%;background: linear-gradient(to bottom right, #395168, #abadb9);">
-    <div v-if="hasLogin || isMobile" class="flex flex-col w-full h-full">
+    <div class="flex flex-col w-full h-full">
       <HeaderComponent
         v-if="isMobile"
         :using-context="usingContext"
@@ -878,7 +880,6 @@ function copyText(event: MouseEvent): void {
                   <NInput
                     ref="inputRef"
                     v-model:value="prompt"
-                    :disabled="!!authStore.session?.auth && !authStore.token"
                     type="textarea"
                     :placeholder="placeholder"
                     :autosize="{ minRows: isMobile ? 1 : 4, maxRows: isMobile ? 4 : 8 }"
@@ -902,7 +903,6 @@ function copyText(event: MouseEvent): void {
       </footer>
       <Prompt v-if="showPrompt" v-model:roomId="uuid" v-model:visible="showPrompt" />
     </div>
-    <iframe v-else style="width: 100%;height: 100%" :src="iframe" />
   </div>
 </template>
 

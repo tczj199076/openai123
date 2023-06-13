@@ -52,6 +52,9 @@ export const useChatStore = defineStore('chat-store', {
     async syncChat(h: Chat.History, lastId?: number, callback?: () => void,
       callbackForStartRequest?: () => void,
       callbackForEmptyMessage?: () => void) {
+      // 如果用户未登录，不加载历史记录
+      const userToken = getToken()
+
       if (!h.uuid) {
         callback && callback()
         return
@@ -78,11 +81,12 @@ export const useChatStore = defineStore('chat-store', {
           // 获取历史记录，然后请求一下接口，并将返回值追加到历史记录里，然后存localstorage，如果已经有storage，怎么不请求，也不添加。
           // storage只对当天有效。次日登录的时候，判断是否过期，如果过期，则清空storage，并继续请求
           // 获取登录次数
+          // 如果用户未登录，不加载历史记录
           const today = new Date().toLocaleDateString()
           if (localStorage.getItem('lastLoginDate') !== today)
             localStorage.removeItem('tmp')
           let tmp
-          if (!localStorage.getItem('tmp')) {
+          if (!localStorage.getItem('tmp') && userToken) {
             const formData = new FormData()
             formData.append('token', getToken())
             const countResult = await fetch('https://cms.openai123.vip/api/getLoginCount', {

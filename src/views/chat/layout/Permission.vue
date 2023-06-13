@@ -7,11 +7,8 @@ import { useAuthStore } from '@/store'
 interface Props {
   visible: boolean
 }
-
 const props = defineProps<Props>()
-
 const emit = defineEmits<Emit>()
-
 interface Emit {
   (e: 'update:visible', visible: boolean): void
 }
