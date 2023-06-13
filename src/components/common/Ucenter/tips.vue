@@ -1,6 +1,7 @@
 <script setup lang='ts'>
 import { computed, ref, watch } from 'vue'
 import { NCard, NModal, NSpace, NTabPane, NTabs, useMessage } from 'naive-ui'
+import ClipboardJS from 'clipboard'
 import { getToken } from '@/store/modules/auth/helper'
 
 interface Emit {
@@ -67,35 +68,28 @@ async function copyToClipboard(content: string, id: number) {
       return
     }
 
-    // 检查是否支持剪贴板 API
-    if (navigator.clipboard) {
-      // 使用 navigator.clipboard API
-      await navigator.clipboard.writeText(content)
-      msg.success('复制成功')
-    }
-    else if (document.queryCommandSupported('copy')) {
-      // 使用 document.execCommand('copy') 方法
-      const textarea = document.createElement('textarea')
-      textarea.textContent = content
-      textarea.style.position = 'fixed' // 避免页面滚动
-      document.body.appendChild(textarea)
-      textarea.select()
+    // 创建一个隐藏的 button 元素，并设置 data-clipboard-text 属性
+    const button = document.createElement('button')
+    button.setAttribute('data-clipboard-text', content)
+    button.style.display = 'none'
+    document.body.appendChild(button)
 
-      try {
-        document.execCommand('copy')
-        msg.success('复制成功')
-      }
-      catch (err) {
-        console.error(err)
-        msg.error('复制失败')
-      }
-      finally {
-        document.body.removeChild(textarea)
-      }
-    }
-    else {
-      msg.error('浏览器不支持剪贴板操作')
-    }
+    // 实例化 ClipboardJS 并复制文本
+    const clipboard = new ClipboardJS(button)
+    clipboard.on('success', () => {
+      msg.success('复制成功')
+      clipboard.destroy()
+    })
+    clipboard.on('error', () => {
+      msg.error('复制失败')
+      clipboard.destroy()
+    })
+
+    // 触发 button 元素的点击事件
+    button.click()
+
+    // 移除 button 元素
+    document.body.removeChild(button)
   }
   catch (err) {
     console.error(err)
