@@ -54,20 +54,52 @@ async function copyToClipboard(content: string, id: number) {
   const formData = new FormData()
   formData.append('token', getToken())
   formData.append('id', id.toString())
-  const response = await fetch('https://cms.openai123.vip/api/help/copy', {
-    method: 'POST',
-    body: formData,
-  })
-  const result = await response.json()
-  if (result.code === 0) {
-    navigator.clipboard.writeText(content).then(() => {
-      msg.success('内容已复制到剪贴板')
-    }, () => {
-      msg.error('无法复制内容到剪贴板')
+
+  try {
+    const response = await fetch('https://cms.openai123.vip/api/help/copy', {
+      method: 'POST',
+      body: formData,
     })
+    const result = await response.json()
+
+    if (result.code !== 0) {
+      msg.error('系统接口出错')
+      return
+    }
+
+    // 检查是否支持剪贴板 API
+    if (navigator.clipboard) {
+      // 使用 navigator.clipboard API
+      await navigator.clipboard.writeText(content)
+      msg.success('复制成功')
+    }
+    else if (document.queryCommandSupported('copy')) {
+      // 使用 document.execCommand('copy') 方法
+      const textarea = document.createElement('textarea')
+      textarea.textContent = content
+      textarea.style.position = 'fixed' // 避免页面滚动
+      document.body.appendChild(textarea)
+      textarea.select()
+
+      try {
+        document.execCommand('copy')
+        msg.success('复制成功')
+      }
+      catch (err) {
+        console.error(err)
+        msg.error('复制失败')
+      }
+      finally {
+        document.body.removeChild(textarea)
+      }
+    }
+    else {
+      msg.error('浏览器不支持剪贴板操作')
+    }
   }
-  else {
-    msg.error('系统接口出错')
+  catch (err) {
+    console.error(err)
+    msg.error('复制失败')
   }
 }
 

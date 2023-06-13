@@ -120,58 +120,83 @@ async function handleArticleClick(id: number) {
     console.error(error)
   }
 }
+
+const isMobile = computed(() => {
+  // 判断是否为移动设备
+  return window.innerWidth <= 768
+})
 </script>
 
 <template>
   <NModal v-model:show="help" fullscreen="true" style="width: 100%; max-width: 1600px;background: linear-gradient(to bottom right, #728da8, #abadb9);" preset="card">
     <NSpace vertical size="large">
-      <NLayout has-sider>
-        <NLayoutSider
-          collapse-mode="width"
-          :collapsed-width="120"
-          :width="240"
-          :show-collapsed-content="false"
-          show-trigger="arrow-circle"
-          content-style="padding: 24px;"
-          bordered
-        >
-          <ul v-if="categories.length">
-            <li
-              v-for="(category, index) in categories"
-              :key="index"
-              class="relative flex items-center gap-3 px-3 py-3 break-all rounded-md cursor-pointer group dark:hover:bg-[#7696b6]"
-              :class="{ 'border-[#4b9e5f]': isActive(category), 'bg-neutral-100': isActive(category), 'dark:text-[#ffffff]': isActive(category), 'dark:bg-[#7696b6]': isActive(category), 'dark:border-[#7696b6]': isActive(category), 'pr-14': isActive(category) }"
-              @click="handleCategoryClick(category)"
-            >
-              {{ category.name }}
-            </li>
-          </ul>
-          <div v-else>
-            分类数据加载中...
-          </div>
-        </NLayoutSider>
-        <NLayoutContent content-style="padding: 24px;">
-          <template v-if="articles.length">
+      <div>
+        <NLayout v-if="!isMobile" has-sider>
+          <NLayoutSider width="300" style="background-color: transparent;">
+            <div class="categories-container">
+              <ul v-if="categories.length">
+                <li
+                  v-for="(category, index) in categories"
+                  :key="index"
+                  class="category-item relative flex items-center gap-3 px-3 py-3 break-all rounded-md cursor-pointer group dark:hover:bg-[#7696b6]"
+                  :class="{ 'border-[#4b9e5f]': isActive(category), 'bg-neutral-100': isActive(category), 'dark:text-[#ffffff]': isActive(category), 'dark:bg-[#7696b6]': isActive(category), 'dark:border-[#7696b6]': isActive(category), 'pr-14': isActive(category) }"
+                  @click="handleCategoryClick(category)"
+                >
+                  {{ category.name }}
+                </li>
+              </ul>
+              <div v-else>
+                分类数据加载中...
+              </div>
+            </div>
+          </NLayoutSider>
+          <NLayoutContent>
             <NCollapse>
-              <NCollapseItem
-                v-for="(article, index) in articles"
-                :key="index"
-                :name="article.id.toString()"
-                :title="article.title"
-                @click="handleArticleClick(article.id)"
-              >
-                <div v-html="article.content" />
+              <NCollapseItem v-for="(article, index) in articles" :key="index" :title="article.title" @click="handleArticleClick(article.id)">
+                <article v-html="article.content" />
               </NCollapseItem>
             </NCollapse>
-          </template>
-          <div v-else-if="!loaded">
-            请选择分类
+          </NLayoutContent>
+        </NLayout>
+        <div v-else>
+          <div class="categories-container">
+            <ul v-if="categories.length">
+              <li
+                v-for="(category, index) in categories"
+                :key="index"
+                class="category-item relative flex items-center gap-3 px-3 py-3 break-all rounded-md cursor-pointer group dark:hover:bg-[#7696b6]"
+                :class="{ 'border-[#4b9e5f]': isActive(category), 'bg-neutral-100': isActive(category), 'dark:text-[#ffffff]': isActive(category), 'dark:bg-[#7696b6]': isActive(category), 'dark:border-[#7696b6]': isActive(category), 'pr-14': isActive(category) }"
+                @click="handleCategoryClick(category)"
+              >
+                {{ category.name }}
+              </li>
+            </ul>
+            <div v-else>
+              分类数据加载中...
+            </div>
           </div>
-          <div v-else>
-            当前分类下没有文章
-          </div>
-        </NLayoutContent>
-      </NLayout>
+          <NLayoutContent>
+            <NCollapse>
+              <NCollapseItem v-for="(article, index) in articles" :key="index" :title="article.title" @click="handleArticleClick(article.id)">
+                <article v-html="article.content" />
+              </NCollapseItem>
+            </NCollapse>
+          </NLayoutContent>
+        </div>
+      </div>
     </NSpace>
   </NModal>
 </template>
+
+<style scoped>
+@media screen and (max-width: 768px) {
+.categories-container {
+overflow-x: auto;
+white-space: nowrap;
+padding: 0 12px;
+}
+.category-item {
+display: inline-block;
+}
+}
+</style>
