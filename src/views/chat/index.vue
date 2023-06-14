@@ -285,7 +285,11 @@ async function onConversation() {
 async function onRegenerate(index: number) {
   // 开始之前 先请求一下接口，判断一下，如果没次数了，就return
   const formData = new FormData()
-  formData.append('token', getToken())
+  let userToken = getToken()
+  if (!userToken)
+    userToken = ''
+
+  formData.append('token', userToken)
   const response = await fetch('https://cms.openai123.vip/api/chatVerify', {
     method: 'POST',
     body: formData,
@@ -304,12 +308,19 @@ async function onRegenerate(index: number) {
   }
   else {
     localStorage.setItem('message_count', userinfo.data.info.month_count + userinfo.data.info.tmp_count + userinfo.data.info.gift_count)
+    // 这里判断是否登录，如果未登录，就弹出其他对话框
+    let msgText = ''
+    if (!userToken)
+      msgText = `尊敬的主人，您的试用次数已用完。点击<button class="register" style="padding:2px 5px 2px 5px;background:#fc5517;color:#fff;border-radius:5px" onclick="document.querySelector('#registerButton').click()">注册</button>再赠送您${userinfo.data.info.register_gift_count}次提问次数`
+    else
+      msgText = '尊敬的主人，您的试用次数已用完，您可以选择明天登录试用，或者您选择购买订阅支持我~mua<button  style="padding:2px 5px 2px 5px;background:#fc5517;color:#fff;border-radius:5px" onclick="document.querySelector(\'#buy_vip\').click()" >支持一下</button>'
+
     // 这里直接返回，不请求
     addChat(
       +uuid,
       {
         dateTime: new Date().toLocaleString(),
-        text: '尊敬的主人，您的试用次数已用完，您可以选择明天登录试用，或者您选择购买订阅支持我~mua<button  style="padding:2px 5px 2px 5px;background:#fc5517;color:#fff;border-radius:5px" onclick="document.querySelector(\'#buy_vip\').click()" >支持一下</button>',
+        text: msgText,
         inversion: false,
         error: false,
         conversationOptions: null,
@@ -624,12 +635,19 @@ async function handleToggleUsingContext() {
 // 理想状态下其实应该是key作为索引项,但官方的renderOption会出现问题，所以就需要value反renderLabel实现
 const searchOptions = computed(() => {
   if (prompt.value.startsWith('/')) {
-    return promptTemplate.value.filter((item: { key: string }) => item.key.toLowerCase().includes(prompt.value.substring(1).toLowerCase())).map((obj: { value: any }) => {
-      return {
-        label: obj.value,
-        value: obj.value,
-      }
-    })
+    const token = getToken()
+    if (token) {
+      return promptTemplate.value.filter((item: { key: string }) => item.key.toLowerCase().includes(prompt.value.substring(1).toLowerCase())).map((obj: { value: any }) => {
+        return {
+          label: obj.value,
+          value: obj.value,
+        }
+      })
+    }
+    else {
+      ms.warning('请先登录以使用提示词功能')
+      return []
+    }
   }
   else {
     return []

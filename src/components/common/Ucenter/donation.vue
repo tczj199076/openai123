@@ -49,12 +49,9 @@ watch(() => props.visible, (newVal) => {
 </script>
 
 <template>
-  <NModal v-model:show="donation" preset="card" style="width: 100%; max-width: 1200px;background: linear-gradient(to bottom right, #728da8, #abadb9);display: flex; justify-content: center; align-items: center;">
-    <div v-if="loaded" style="display: flex; flex-direction: column; align-items: center;">
-      <img :src="data.donation_qrcode" alt="二维码" width="300" height="300" style="margin-top: 20px;">
-      <p style="margin-top: 20px; text-align: center;">
-        {{ data.donation_context }}
-      </p>
+  <NModal v-model:show="donation" preset="card" style="width: 100%; max-width: 1200px;background: linear-gradient(to bottom right, #728da8, #abadb9); ">
+    <div v-if="loaded">
+      <p style="margin-top: 20px;" v-html="data.donation_context" />
     </div>
   </NModal>
 </template>
@@ -63,4 +60,11 @@ watch(() => props.visible, (newVal) => {
   .n-card {
     max-width: 250px;
   }
+
+/* 使用深度选择器覆盖 v-html 内容中的样式 */
+  ::v-deep p img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
   </style>

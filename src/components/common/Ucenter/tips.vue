@@ -1,31 +1,29 @@
 <script setup lang='ts'>
 import { computed, ref, watch } from 'vue'
 import { NCard, NModal, NSpace, NTabPane, NTabs, useMessage } from 'naive-ui'
-import ClipboardJS from 'clipboard'
 import { getToken } from '@/store/modules/auth/helper'
+
+const props = defineProps<Props>()
+
+const emit = defineEmits<Emit>()
+
+const msg = useMessage()
 
 interface Emit {
   (e: 'update:visible', visible: boolean): void
 }
-
 interface Props {
   visible: boolean
 }
-
 interface CategoryData {
   name: string
   contents: any[]
 }
 
-const props = defineProps<Props>()
-const emit = defineEmits<Emit>()
-const msg = useMessage()
-
 const tips = computed({
   get: () => props.visible,
   set: (visible: boolean) => emit('update:visible', visible),
 })
-
 const data = ref<CategoryData[]>([])
 const loaded = ref(false)
 
@@ -55,41 +53,34 @@ async function copyToClipboard(content: string, id: number) {
   const formData = new FormData()
   formData.append('token', getToken())
   formData.append('id', id.toString())
-
   try {
     const response = await fetch('https://cms.openai123.vip/api/help/copy', {
       method: 'POST',
       body: formData,
     })
     const result = await response.json()
-
     if (result.code !== 0) {
       msg.error('系统接口出错')
       return
     }
+    else {
+      // 创建 textarea 元素
+      const textarea = document.createElement('textarea')
+      textarea.style.position = 'absolute'
+      textarea.style.left = '-9999px'
+      textarea.style.top = '-9999px'
+      textarea.value = content
 
-    // 创建一个隐藏的 button 元素，并设置 data-clipboard-text 属性
-    const button = document.createElement('button')
-    button.setAttribute('data-clipboard-text', content)
-    button.style.display = 'none'
-    document.body.appendChild(button)
+      // 将 textarea 添加到 modal 中
+      const modalBody = document.querySelector('#tipsHere') as HTMLElement
+      modalBody.appendChild(textarea)
 
-    // 实例化 ClipboardJS 并复制文本
-    const clipboard = new ClipboardJS(button)
-    clipboard.on('success', () => {
+      // 选中 textarea 并执行复制操作
+      textarea.select()
+      document.execCommand('copy')
+
       msg.success('复制成功')
-      clipboard.destroy()
-    })
-    clipboard.on('error', () => {
-      msg.error('复制失败')
-      clipboard.destroy()
-    })
-
-    // 触发 button 元素的点击事件
-    button.click()
-
-    // 移除 button 元素
-    document.body.removeChild(button)
+    }
   }
   catch (err) {
     console.error(err)
@@ -104,7 +95,7 @@ function formatDesc(desc: string) {
 </script>
 
 <template>
-  <NModal v-model:show="tips" style="width: 100%; max-width: 1200px;background: linear-gradient(to bottom right, #728da8, #abadb9);" preset="card">
+  <NModal id="tipsHere" v-model:show="tips" style="width: 100%; max-width: 1200px;background: linear-gradient(to bottom right, #728da8, #abadb9);" preset="card">
     <NTabs
       v-if="loaded"
       type="line"
@@ -122,7 +113,7 @@ function formatDesc(desc: string) {
               content: true,
               footer: 'soft',
             }" :title="content.title" class="text-xs" hoverable style="background: linear-gradient(to bottom right, #728da8, #abadb9);"
-            @click="copyToClipboard(content.desc, content.id)"
+            @click="() => copyToClipboard(content.desc, content.id)"
           >
             <template #header>
               {{ content.title }}
