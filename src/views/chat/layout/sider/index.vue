@@ -86,7 +86,7 @@ watch(
     :style="getMobileClass"
     @update-collapsed="handleUpdateCollapsed"
   >
-    <div class="flex flex-col h-full pt-12 dark:bg-[#395168]" :style="mobileSafeArea">
+    <div class="flex flex-col h-full  dark:bg-[#395168]" :style="[!isMobile ? 'padding-top: 5rem;' : mobileSafeArea]">
       <main class="flex flex-col flex-1 min-h-0">
         <div class="p-4">
           <NButton type="warning" dark:text-white block :disabled="!!authStore.session?.auth && !authStore.token" @click="handleAdd">

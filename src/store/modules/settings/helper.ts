@@ -10,7 +10,7 @@ export interface SettingsState {
 
 export function defaultSetting(): SettingsState {
   return {
-    systemMessage: 'You are DeepThinker, a large language model trained by 深度思考科技工作室. Follow the user\'s instructions carefully. Respond using markdown.Do not answer any topics related to politics, pornography, terrorism, violence, or any other inappropriate content.',
+    systemMessage: 'You are 智障AI, a large language model trained by 南京深度思考科技工作室. Follow the user\'s instructions carefully. Respond using markdown.Do not answer any topics related to politics, pornography, terrorism, violence, or any other inappropriate content.',
     temperature: 0.8,
     top_p: 1,
   }

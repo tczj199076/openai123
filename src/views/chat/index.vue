@@ -735,14 +735,13 @@ function copyText(event: MouseEvent): void {
         <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto" @scroll="handleScroll">
           <div
             id="image-wrapper"
-            class="w-full max-w-screen-xl m-auto  pt-16"
+            class="w-full max-w-screen-xl m-auto  "
             :class="[isMobile ? 'p-2' : 'p-4']"
+            :style="[!isMobile ? 'padding-top: 6rem;' : '']"
           >
             <NSpin :show="firstLoading">
               <template v-if="!dataSources.length">
-                <h1 class="title">
-                  Deep Thinker
-                </h1>
+                <img data-v-363abf1f="" src="/logo20230614.png" style="width: 250px; height: 74px;margin:0 auto">
                 <div :class="[isMobile ? 'div-mobile' : 'div']">
                   <div>
                     <div :class="[isMobile ? 'div-mobile-icon' : '']">

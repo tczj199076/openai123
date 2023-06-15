@@ -31,7 +31,7 @@ onMounted(async () => {
   <NLayoutHeader>
     <div class="header-container  dark:bg-[#395168] p-4 flex justify-between items-center">
       <div class="logo">
-        <img src="https://openai123.bj.bcebos.com/logo_20230509.png" style="width:250px; height:26px;">
+        <img src="/logo20230614.png" style="width:250px; height:74px;">
       </div>
       <div
         v-if="!!authStore.session?.auth && !authStore.token" class="login-btn"
@@ -44,7 +44,7 @@ onMounted(async () => {
         </NButton>
       </div>
 
-      <div v-else class="flex items-center justify-between min-w-0 p-4 overflow-hidden border-t dark:border-neutral-800">
+      <div v-else class="flex items-center justify-between min-w-0 p-4 overflow-hidden border-t dark:border-0">
         <div class="flex-1 flex-shrink-0 overflow-hidden">
           <UserAvatar />
         </div>
@@ -72,7 +72,7 @@ onMounted(async () => {
     top: 0;
     left: 0;
     width: 100%;
-    height: 60px;
+    height: 80px;
     z-index: 10;
   }
   .logo {

@@ -40,9 +40,9 @@ async function getUserId(req: Request): Promise<string | undefined> {
   try {
     let token = req.header('Authorization')
     let info = { userId: '64721746d7ec1f8002965101' }
+    const config = await getCacheConfig()
     if (token) {
       token = token.replace('Bearer ', '')
-      const config = await getCacheConfig()
       info = jwt.verify(token, config.siteConfig.loginSalt.trim())
     }
     // const token = req.header('Authorization').replace('Bearer ', '')
