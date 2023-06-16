@@ -31,7 +31,7 @@ onMounted(async () => {
   <NLayoutHeader>
     <div class="header-container  dark:bg-[#395168] p-4 flex justify-between items-center">
       <div class="logo">
-        <img src="/logo20230614.png" style="width:250px; height:74px;">
+        <img src="/logo20230614.png" style="width:220px; height:70px;">
       </div>
       <div
         v-if="!!authStore.session?.auth && !authStore.token" class="login-btn"

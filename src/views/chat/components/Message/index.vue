@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { NButtonGroup, NPopover, NSpace, useMessage } from 'naive-ui'
 import AvatarComponent from './Avatar.vue'
 import TextComponent from './Text.vue'
@@ -50,6 +50,84 @@ const indexRef = ref<number>(0)
 indexRef.value = props.responseCount ?? 0
 
 const url_openai_token = 'https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them'
+
+// 语音播放
+
+const speechRate = ref(1)
+const isPlaying = ref(false)
+const voices = ref<SpeechSynthesisVoice[]>([])
+const voiceIndex = ref(0)
+const selectedVoice = ref(0)
+const utterance = ref<SpeechSynthesisUtterance | null>(null)
+const isIconVisible = ref(true)
+let timer: ReturnType<typeof setInterval> | null = null
+
+const handlePlaySpeech = () => {
+  const textToSpeak = props.text // 获取要播放的文本内容
+  if ('speechSynthesis' in window) {
+    if (utterance.value)
+      speechSynthesis.cancel()
+
+    utterance.value = new SpeechSynthesisUtterance(textToSpeak)
+    utterance.value.voice = voices.value[selectedVoice.value] // 使用 selectedVoice.value
+    utterance.value.rate = speechRate.value // 设置速度
+    speechSynthesis.speak(utterance.value)
+    isPlaying.value = true
+    utterance.value.onend = () => {
+      if (timer) {
+        clearInterval(timer)
+        isIconVisible.value = true
+      }
+      isPlaying.value = false
+    }
+
+    // 设置图标闪烁
+    timer = setInterval(() => {
+      isIconVisible.value = !isIconVisible.value
+    }, 300)
+  }
+  else {
+    message.error('您的浏览器不支持语音合成，请前往PC端体验')
+  }
+}
+
+const handleStopSpeech = () => {
+  if (utterance.value) {
+    speechSynthesis.cancel()
+    if (timer) {
+      clearInterval(timer)
+      isIconVisible.value = true
+    }
+    isPlaying.value = false
+  }
+}
+
+const togglePlaySpeech = () => {
+  if (isPlaying.value)
+    handleStopSpeech()
+
+  else
+    handlePlaySpeech()
+}
+
+const loadVoices = () => {
+  voices.value = speechSynthesis.getVoices() as SpeechSynthesisVoice[]
+}
+
+onMounted(() => {
+  loadVoices()
+  if (speechSynthesis.onvoiceschanged !== undefined)
+    speechSynthesis.onvoiceschanged = loadVoices
+})
+
+watch(selectedVoice, (newIndex) => {
+  voiceIndex.value = newIndex
+})
+
+// 设置默认值
+voiceIndex.value = 0 // 默认音色为数组中第一个,这里设置没反应，暂时先留着//TODO
+speechRate.value = 2.0 // 默认速度为1.0，正常速度
+// 语音播放结束
 
 // const options = computed(() => {
 //   const common = [
@@ -220,6 +298,9 @@ if (message_count === '-1')
           :as-raw-text="asRawText"
         />
         <div class="flex flex-col">
+          <button v-if="inversion" class="mb-2 transition text-neutral-300 hover:text-neutral-800 dark:hover:text-neutral-200 p-1" title="复制" @click="handleCopy">
+            <SvgIcon icon="ri:file-copy-2-line" />
+          </button>
           <button
             v-if="!inversion"
             class="mb-2 transition text-neutral-300 hover:text-neutral-800 dark:hover:text-neutral-300"
@@ -227,6 +308,19 @@ if (message_count === '-1')
             @click="handleRegenerate"
           >
             <SvgIcon icon="ri:restart-line" />
+          </button>
+          <button
+            v-if="!inversion"
+            class=" transition text-neutral-300 hover:text-neutral-800 dark:hover:text-neutral-300"
+            title="播放语音"
+            @click="togglePlaySpeech"
+          >
+            <span v-show="isIconVisible">
+              <SvgIcon icon="ri:volume-up-line" />
+            </span>
+            <span v-show="!isIconVisible">
+              <SvgIcon icon="ri:volume-down-line" />
+            </span>
           </button>
           <!-- <NDropdown
             :trigger="isMobile ? 'click' : 'hover'"

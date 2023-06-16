@@ -23,26 +23,32 @@
 <!-- End Matomo -->
 	<div id="app">
 		<style>
-			.loading-wrap {
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				height: 100vh;
-			}
+.loading-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 100vh;
+}
 
-			.balls {
-				width: 4em;
-				display: flex;
-				flex-flow: row nowrap;
-				align-items: center;
-				justify-content: space-between;
-			}
+.balls {
+  width: 4em;
+  display: flex;
+  justify-content: space-between;
+}
+
+#loading-text {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #f19d6c;
+  text-align: center;
+}
 
 			.balls div {
 				width: 0.8em;
 				height: 0.8em;
 				border-radius: 50%;
-				background-color: #4b9e5f;
+				background-color: #f19d6c;
 			}
 
 			.balls div:nth-of-type(1) {
@@ -85,6 +91,7 @@
 				<div></div>
 				<div></div>
 			</div>
+			<div id="loading-text">AI模型初始化中...</div>
 		</div>
 	</div>
 	<script type="module" src="/src/main.ts"></script>

@@ -21,6 +21,7 @@ import { getToken } from '@/store/modules/auth/helper'
 
 import { UserConfig } from '@/components/common/Setting/model'
 import type { CHATMODEL } from '@/components/common/Setting/model'
+
 const Prompt = defineAsyncComponent(() => import('@/components/common/Setting/Prompt.vue'))
 
 let controller = new AbortController()
@@ -741,7 +742,7 @@ function copyText(event: MouseEvent): void {
           >
             <NSpin :show="firstLoading">
               <template v-if="!dataSources.length">
-                <img data-v-363abf1f="" src="/logo20230614.png" style="width: 250px; height: 74px;margin:0 auto">
+                <img data-v-363abf1f="" src="/logo20230614.png" style="width: 220px; height: 70px;margin:0 auto">
                 <div :class="[isMobile ? 'div-mobile' : 'div']">
                   <div>
                     <div :class="[isMobile ? 'div-mobile-icon' : '']">
