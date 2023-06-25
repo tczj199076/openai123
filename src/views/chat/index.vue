@@ -742,7 +742,7 @@ function copyText(event: MouseEvent): void {
           >
             <NSpin :show="firstLoading">
               <template v-if="!dataSources.length">
-                <img data-v-363abf1f="" src="/logo20230614.png" style="width: 220px; height: 70px;margin:0 auto">
+                <img data-v-363abf1f="" src="/logo20230614.png" style="width: 180px; height: 56px;margin:0 auto">
                 <div :class="[isMobile ? 'div-mobile' : 'div']">
                   <div>
                     <div :class="[isMobile ? 'div-mobile-icon' : '']">
