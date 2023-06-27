@@ -263,12 +263,21 @@ async function fetchBalance() {
       console.error('您的账户已被封禁，请登录OpenAI进行查看。')
       return
     }
-    const subscriptionData = await response.json()
+    interface SubscriptionData {
+      hard_limit_usd?: number
+      // 这里可以添加其他可能的属性
+    }
+    const subscriptionData: SubscriptionData = await response.json()
     const totalAmount = subscriptionData.hard_limit_usd
+
+    interface UsageData {
+      total_usage?: number
+      // 这里可以添加其他可能的属性
+    }
 
     // 获取已使用量
     response = await fetch(urlUsage, { agent: socksAgent === undefined ? httpsAgent : socksAgent, headers })
-    const usageData = await response.json()
+    const usageData: UsageData = await response.json()
     const totalUsage = usageData.total_usage / 100
 
     // 计算剩余额度
