@@ -898,6 +898,7 @@ function copyText(event: MouseEvent): void {
                   <NInput
                     ref="inputRef"
                     v-model:value="prompt"
+                    :disabled="!!authStore.session?.auth && !authStore.token"
                     type="textarea"
                     :placeholder="placeholder"
                     :autosize="{ minRows: isMobile ? 1 : 4, maxRows: isMobile ? 4 : 8 }"

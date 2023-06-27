@@ -87,12 +87,6 @@ router.get('/chatrooms', auth, async (req, res) => {
 router.post('/room-create', auth, async (req, res) => {
   try {
     const userId = req.headers.userId as string
-    // 2023-06-15 修改
-    if (userId === '64721746d7ec1f8002965101') {
-      res.send({ status: 'Success', message: null, data: { roomId: 1686554337549 } })
-      return
-    }
-    // 结束
     const { title, roomId } = req.body as { title: string; roomId: number }
     const room = await createChatRoom(userId, title, roomId)
     res.send({ status: 'Success', message: null, data: room })
@@ -386,12 +380,6 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
 
   let { roomId, uuid, regenerate, prompt, options = {}, systemMessage, temperature, top_p } = req.body as RequestProps
   const userId = req.headers.userId as string
-  // 20230615修改
-  if (userId === '64721746d7ec1f8002965101') {
-  // 强制修改房间号为1686554337549
-    roomId = 1686554337549
-  }
-  // 结束
   const room = await getChatRoom(userId, roomId)
   if (room == null)
     global.console.error(`Unable to get chat room \t ${userId}\t ${roomId}`)

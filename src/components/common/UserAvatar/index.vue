@@ -6,14 +6,15 @@ import { useAuthStore, useUserStore } from '@/store'
 import defaultAvatar from '@/assets/avatar.jpg'
 import { isString } from '@/utils/is'
 import Permission from '@/views/chat/layout/Permission.vue'
+import { useBasicLayout } from '@/hooks/useBasicLayout'
 
 const route = useRoute()
 const userStore = useUserStore()
 const authStore = useAuthStore()
-// const { isMobile } = useBasicLayout()
+const { isMobile } = useBasicLayout()
 const showPermission = ref(false)
 
-// const needPermission = computed(() => !!authStore.session?.auth && !authStore.token && (isMobile.value || showPermission.value))
+const needPermission = computed(() => !!authStore.session?.auth && !authStore.token && (isMobile.value || showPermission.value))
 
 const userInfo = computed(() => userStore.userInfo)
 
@@ -43,8 +44,14 @@ onMounted(async () => {
       <h2 v-if="userInfo.name" class="overflow-hidden font-bold text-md text-ellipsis whitespace-nowrap">
         {{ userInfo.name }}
       </h2>
+      <p v-if="userInfo.name" class="overflow-hidden text-xs text-gray-500 text-ellipsis whitespace-nowrap">
+        <span
+          v-if="isString(userInfo.description) && userInfo.description !== ''"
+          v-html="userInfo.description"
+        />
+      </p>
       <NButton
-        v-else id="registerButton" tag="a" text
+        v-else tag="a" text
         @click="showPermission = true"
       >
         <span v-if="!!authStore.session?.auth && !authStore.token" class="text-xl text-[#ff69b4] dark:text-white">
@@ -55,7 +62,6 @@ onMounted(async () => {
         </span>
       </NButton>
     </div>
-    <!-- 20230613修改，原先这里是needPermission -->
-    <Permission :visible="showPermission" />
+    <Permission :visible="needPermission" />
   </div>
 </template>
