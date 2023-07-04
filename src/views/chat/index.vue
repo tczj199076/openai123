@@ -23,6 +23,7 @@ import { UserConfig } from '@/components/common/Setting/model'
 import type { CHATMODEL } from '@/components/common/Setting/model'
 
 const Prompt = defineAsyncComponent(() => import('@/components/common/Setting/Prompt.vue'))
+const Ai = defineAsyncComponent(() => import('@/components/common/Setting/Ai.vue'))
 
 let controller = new AbortController()
 let lastChatInfo: any = {}
@@ -52,6 +53,7 @@ const firstLoading = ref<boolean>(false)
 const loading = ref<boolean>(false)
 const inputRef = ref<Ref | null>(null)
 const showPrompt = ref(false)
+const showAi = ref(false)
 
 let loadingms: MessageReactive
 let allmsg: MessageReactive
@@ -729,8 +731,10 @@ function copyText(event: MouseEvent): void {
         v-if="isMobile"
         :using-context="usingContext"
         :show-prompt="showPrompt"
+        :show-ai="showAi"
         @export="handleExport" @toggle-using-context="handleToggleUsingContext"
         @toggle-show-prompt="showPrompt = true"
+        @toggle-show-ai="showAi = true"
       />
       <main class="flex-1 overflow-hidden">
         <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto" @scroll="handleScroll">
@@ -864,14 +868,9 @@ function copyText(event: MouseEvent): void {
         <div class="w-full max-w-screen-xl m-auto">
           <NSpace vertical>
             <div class="flex items-center space-x-2">
-              <HoverButton @click="handleClear">
+              <HoverButton v-if="!isMobile" @click="showAi = true">
                 <span class="text-xl text-[#4f555e] dark:text-white">
-                  <SvgIcon icon="ri:delete-bin-line" />
-                </span>
-              </HoverButton>
-              <HoverButton v-if="!isMobile" @click="handleExport">
-                <span class="text-xl text-[#4f555e] dark:text-white">
-                  <SvgIcon icon="ri:download-2-line" />
+                  <svg t="1686880169098" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7959" width="32" height="32" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M913.066667 465.92c-13.653333 0-25.6-11.946667-25.6-25.6v-117.76c0-15.36-8.533333-30.72-22.186667-37.546667L537.6 93.866667c-13.653333-8.533333-30.72-8.533333-44.373333 0L163.84 283.306667c-13.653333 8.533333-22.186667 22.186667-22.186667 37.546666v64.853334c0 13.653333-11.946667 25.6-25.6 25.6s-25.6-11.946667-25.6-25.6v-64.853334c0-34.133333 18.773333-64.853333 47.786667-81.92L467.626667 49.493333c29.013333-17.066667 66.56-17.066667 95.573333 0L892.586667 238.933333c29.013333 17.066667 47.786667 47.786667 47.786666 81.92v117.76c-1.706667 15.36-11.946667 27.306667-27.306666 27.306667zM515.413333 988.16c-17.066667 0-32.426667-3.413333-47.786666-11.946667L138.24 785.066667c-29.013333-17.066667-47.786667-47.786667-47.786667-81.92v-109.226667c0-13.653333 11.946667-25.6 25.6-25.6s25.6 11.946667 25.6 25.6v109.226667c0 15.36 8.533333 30.72 22.186667 37.546666l329.386667 189.44c13.653333 8.533333 30.72 8.533333 44.373333 0l329.386667-189.44c13.653333-8.533333 22.186667-22.186667 22.186666-37.546666V631.466667c0-13.653333 11.946667-25.6 25.6-25.6s23.893333 10.24 23.893334 25.6v71.68c0 34.133333-18.773333 64.853333-47.786667 81.92L563.2 974.506667c-15.36 8.533333-32.426667 13.653333-47.786667 13.653333z" fill="#e6e6e6" p-id="7960" /><path d="M597.333333 645.12h-73.386666l-23.893334-71.68h-114.346666l-23.893334 71.68h-73.386666l114.346666-314.026667h78.506667L597.333333 645.12z m-110.933333-124.586667l-35.84-109.226666c-1.706667-6.826667-3.413333-15.36-5.12-27.306667H443.733333c0 8.533333-3.413333 18.773333-5.12 27.306667l-35.84 109.226666h83.626667zM704.853333 329.386667v314.026666h-66.56V329.386667h66.56z" fill="#e6e6e6" p-id="7961" /><path d="M112.64 544.426667m-69.973333 0a69.973333 69.973333 0 1 0 139.946666 0 69.973333 69.973333 0 1 0-139.946666 0Z" fill="#e6e6e6" p-id="7962" /><path d="M911.36 467.626667m-69.973333 0a69.973333 69.973333 0 1 0 139.946666 0 69.973333 69.973333 0 1 0-139.946666 0Z" fill="#e6e6e6" p-id="7963" /><path d="M814.08 646.826667V377.173333c0-23.893333-13.653333-46.08-34.133333-59.733333L546.133333 182.613333c-20.48-11.946667-47.786667-11.946667-68.266666 0l-233.813334 134.826667c-20.48 11.946667-34.133333 34.133333-34.133333 59.733333V648.533333c0 23.893333 13.653333 46.08 34.133333 59.733334L477.866667 841.386667c20.48 11.946667 47.786667 11.946667 68.266666 0l233.813334-134.826667c22.186667-11.946667 34.133333-34.133333 34.133333-59.733333z" fill="#e6e6e6" opacity=".3" p-id="7964" /></svg>
                 </span>
               </HoverButton>
               <HoverButton v-if="!isMobile" @click="showPrompt = true">
@@ -891,14 +890,24 @@ function copyText(event: MouseEvent): void {
                 :disabled="!!authStore.session?.auth && !authStore.token"
                 @update-value="(val) => handleSyncChatModel(val)"
               />
+              <HoverButton @click="handleClear">
+                <span class="text-xl text-[#4f555e] dark:text-white">
+                  <SvgIcon icon="ri:delete-bin-line" />
+                </span>
+              </HoverButton>
+              <HoverButton v-if="!isMobile" @click="handleExport">
+                <span class="text-xl text-[#4f555e] dark:text-white">
+                  <SvgIcon icon="ri:download-2-line" />
+                </span>
+              </HoverButton>
             </div>
             <div class="flex items-center justify-between space-x-2">
               <NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
                 <template #default="{ handleInput, handleBlur, handleFocus }">
+                  <!-- :disabled="!!authStore.session?.auth && !authStore.token" -->
                   <NInput
                     ref="inputRef"
                     v-model:value="prompt"
-                    :disabled="!!authStore.session?.auth && !authStore.token"
                     type="textarea"
                     :placeholder="placeholder"
                     :autosize="{ minRows: isMobile ? 1 : 4, maxRows: isMobile ? 4 : 8 }"
@@ -921,6 +930,7 @@ function copyText(event: MouseEvent): void {
         </div>
       </footer>
       <Prompt v-if="showPrompt" v-model:roomId="uuid" v-model:visible="showPrompt" />
+      <Ai v-if="showAi" v-model:roomId="uuid" v-model:visible="showAi" />
     </div>
   </div>
 </template>

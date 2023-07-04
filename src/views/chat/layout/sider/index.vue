@@ -99,6 +99,9 @@ watch(
         <div>
           <div v-if="!!authStore.session?.auth && !authStore.token" />
           <div v-else v-show="authStore.session?.auth" class="p-4 " style="display: grid; grid-template-rows: repeat(3, auto); gap: 10px;">
+            <NButton type="warning" dark:text-white block @click="tips = true">
+              {{ $t('store.siderButton') }}
+            </NButton>
             <NButton v-if="state.status === 1" id="buy_vip" type="warning" dark:text-white block @click="vip = true">
               {{ $t('store.vip') }}
             </NButton>
@@ -108,9 +111,7 @@ watch(
             <NButton type="warning" dark:text-white block @click="ucenter = true">
               {{ $t('store.ucenter') }}
             </NButton>
-            <NButton type="warning" dark:text-white block @click="tips = true">
-              {{ $t('store.siderButton') }}
-            </NButton>
+
             <NButton type="warning" dark:text-white block @click="help = true">
               {{ $t('store.help') }}
             </NButton>

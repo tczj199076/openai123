@@ -1,6 +1,6 @@
-<script setup lang='ts'>
+<script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
-import { NCard, NModal, NSpace, NTabPane, NTabs, useMessage } from 'naive-ui'
+import { NButton, NCollapse, NCollapseItem, NModal, useMessage } from 'naive-ui'
 import { getToken } from '@/store/modules/auth/helper'
 
 const props = defineProps<Props>()
@@ -12,19 +12,31 @@ const msg = useMessage()
 interface Emit {
   (e: 'update:visible', visible: boolean): void
 }
+
 interface Props {
   visible: boolean
 }
+
+interface ContentData {
+  id: number
+  category_id: number
+  create_at: string
+  desc: string
+  content: string
+  title: string
+  result: string
+}
+
 interface CategoryData {
-  name: string
-  contents: any[]
+  [key: string]: ContentData[]
 }
 
 const tips = computed({
   get: () => props.visible,
   set: (visible: boolean) => emit('update:visible', visible),
 })
-const data = ref<CategoryData[]>([])
+
+const data = ref<CategoryData>({})
 const loaded = ref(false)
 
 async function fetchData() {
@@ -36,10 +48,11 @@ async function fetchData() {
   })
   const result = await response.json()
   if (result.code === 0) {
-    const categories = (Object.entries(result.data.info) as [string, any[]][])
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([name, contents]) => ({ name, contents } as CategoryData))
-    data.value = categories
+    const categoryData: CategoryData = {}
+    for (const category in result.data.info)
+      categoryData[category] = result.data.info[category]
+
+    data.value = categoryData
     loaded.value = true
   }
 }
@@ -49,7 +62,30 @@ watch(() => props.visible, (newVal) => {
     fetchData()
 })
 
+const activeCollapse = ref<string>('')
+const activeContent = ref<ContentData | null>(null)
+const selectedId = ref(0)
+
+function handleCollapseClick(category: string) {
+  activeCollapse.value = activeCollapse.value === category ? '' : category
+}
+
+function selectItem(content: ContentData) {
+  activeContent.value = content
+  selectedId.value = content.id
+}
+
+function replaceBrackets(content: string): string {
+  return content.replace(/\{(.+?)\}/g, '<input class="user-input" style="color: #333;width: 100%;height: 30px;padding: 2px 5px; border: 1px solid #ff7220FF;border-radius: 4px;" placeholder="请输入内容" />')
+}
+
 async function copyToClipboard(content: string, id: number) {
+  const userInputElements = document.querySelectorAll('.user-input') as NodeListOf<HTMLInputElement>
+  const userInputValues = Array.from(userInputElements).map(element => element.value)
+  let replacedContent = content
+  userInputValues.forEach((value) => {
+    replacedContent = replacedContent.replace(/\{(.+?)\}/, value)
+  })
   const formData = new FormData()
   formData.append('token', getToken())
   formData.append('id', id.toString())
@@ -64,21 +100,15 @@ async function copyToClipboard(content: string, id: number) {
       return
     }
     else {
-      // 创建 textarea 元素
       const textarea = document.createElement('textarea')
       textarea.style.position = 'absolute'
       textarea.style.left = '-9999px'
       textarea.style.top = '-9999px'
-      textarea.value = content
-
-      // 将 textarea 添加到 modal 中
+      textarea.value = replacedContent
       const modalBody = document.querySelector('#tipsHere') as HTMLElement
       modalBody.appendChild(textarea)
-
-      // 选中 textarea 并执行复制操作
       textarea.select()
       document.execCommand('copy')
-
       msg.success('复制成功')
     }
   }
@@ -87,64 +117,114 @@ async function copyToClipboard(content: string, id: number) {
     msg.error('复制失败')
   }
 }
-
-function formatDesc(desc: string) {
-  const regex = /{([^}]+)}/g
-  return desc.replace(regex, '<span style="color:#f19d6c;display:inline;border: 1px solid;padding: 0px 3px 0px 3px;margin: 0 5px 0 5px;">$1</span>')
-}
 </script>
 
 <template>
-  <NModal id="tipsHere" v-model:show="tips" style="width: 100%; max-width: 1200px;background: linear-gradient(to bottom right, #728da8, #abadb9);" preset="card">
-    <NTabs
-      v-if="loaded"
-      type="line"
-      size="large"
-      :tabs-padding="20"
-      pane-style="padding: 20px;"
-    >
-      <!-- 遍历data数组，生成对应的标签页和卡片组件 -->
-      <NTabPane v-for="(category, index) in data" :key="index" :name="category.name">
-        <NSpace size="large" style="flex-wrap: wrap;">
-          <NCard
-            v-for="(content, idx) in category.contents"
-            :key="idx"
-            :segmented="{
-              content: true,
-              footer: 'soft',
-            }" :title="content.title" class="text-xs" hoverable style="background: linear-gradient(to bottom right, #728da8, #abadb9);"
-            @click="() => copyToClipboard(content.desc, content.id)"
-          >
-            <template #header>
-              {{ content.title }}
-              <span
-                style="position: absolute;
-    top: 0px;
-    right: 0px;
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
-    background: rgb(255, 114, 32);
-    font-size: 12px;
-    border-radius: 3px;
-    padding: 2px 5px 2px 5px;" @click.stop="copyToClipboard(content.desc, content.id)"
-              >复制</span>
-            </template>
-            <template #footer>
-              <span v-html="formatDesc(content.desc)" />
-            </template>
-            <template #action>
-              {{ content.content }}
-            </template>
-          </NCard>
-        </NSpace>
-      </NTabPane>
-    </NTabs>
+  <NModal
+    v-model:show="tips"
+    style="width: 100%; max-width: 1200px;background: linear-gradient(to bottom right, #728da8, #abadb9);"
+    preset="card"
+  >
+    <div style="display: flex;">
+      <NCollapse style="flex: 1; padding-right: 10px;">
+        <!-- 遍历数据渲染折叠面板 -->
+        <NCollapseItem
+          v-for="(contents, category) in data"
+          :key="category"
+          :title="category as string"
+          :name="category"
+          :value="activeCollapse === category"
+          @click="handleCollapseClick(category as string)"
+        >
+          <div v-if="contents.length > 0">
+            <!-- 遍历折叠项的内容 -->
+            <div v-for="(content, index) in contents" :key="index" class="item-content">
+              <div class="item-title" :class="{ 'item-selected': content.id === selectedId }" @click="selectItem(content)">
+                <i class="ri-arrow-right-double-line" />{{ content.title }}
+              </div>
+            </div>
+          </div>
+          <div v-else>
+            暂无内容
+          </div>
+        </NCollapseItem>
+      </NCollapse>
+      <div style="display: flex; flex-direction: column; flex: 1; padding: 0 30px 0 15px; ">
+        <div v-if="activeContent">
+          <h3 style="text-align:center;font-size: 18px;font-weight: bold;">
+            示例
+          </h3>
+          <div class="content-text" v-html="replaceBrackets(activeContent!.content)" />
+          <h3 style="text-align:center;font-size: 18px;font-weight: bold;">
+            GPT返回示例
+          </h3>
+          <div class="content-text" style="max-height: 400px; max-width: 400px;padding:10px; overflow-y: auto; white-space: pre-line !important;" v-html="activeContent!.result" />
+        </div>
+        <div v-else>
+          请选择一个折叠项查看详情
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; flex: 1; padding-left: 10px;">
+        <div v-if="activeContent">
+          <h3 style="text-align:center;font-size: 18px;font-weight: bold;">
+            使用
+          </h3>
+          <div class="content-text" v-html="replaceBrackets(activeContent!.desc)" />
+          <div style="width: 100%;text-align:center;">
+            <NButton
+              type="primary"
+              size="small"
+              style="color:#fff"
+              @click.stop="copyToClipboard(activeContent!.desc, activeContent!.id)"
+            >
+              复制并使用
+            </NButton>
+          </div>
+        </div>
+      </div>
+    </div>
   </NModal>
 </template>
 
 <style scoped>
+.item-content {
+  margin-bottom: 10px;
+  padding-left: 35px;
+}
+
+.item-title {
+  display: inline-block;
+  cursor: pointer;
+}
+
+.item-selected {
+  color: #f19d6c;
+}
+
 .n-card {
   max-width: 250px;
 }
+
+.content-text {
+  margin-bottom: 20px; /* 调整行间距 */
+  line-height: 40px;
+}
+
+#quill-editor {
+  height: 200px;
+}
+
+.editor-container {
+  flex: 1;
+  margin-top: 20px; /* 调整与上方内容的间距 */
+}
+
+.content-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+::v-deep.content-text>p>span {text-wrap:wrap !important}
+
+body,a,table,div,span,td,th,input,select{overflow-x:hidden;overflow-y:auto;word-break:break-all; }
 </style>

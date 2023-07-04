@@ -145,7 +145,7 @@ export default {
     remark: '备注',
   },
   store: {
-    siderButton: '提示词商店',
+    siderButton: '创作模板',
     local: '本地',
     online: '在线',
     title: '标题',

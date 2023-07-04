@@ -8,8 +8,16 @@ const auth = async (req, res, next) => {
   const config = await getCacheConfig()
   if (config.siteConfig.loginEnabled) {
     try {
-      const token = req.header('Authorization').replace('Bearer ', '')
-      const info = jwt.verify(token, config.siteConfig.loginSalt.trim())
+      // 临时修改，用户免登录可聊天
+      let token = req.header('Authorization')
+      let info = { userId: '64721746d7ec1f8002965101' }
+      if (token) {
+        token = token.replace('Bearer ', '')
+        info = jwt.verify(token, config.siteConfig.loginSalt.trim())
+      }
+      // 修改结束
+      // const token = req.header('Authorization').replace('Bearer ', '')
+      // const info = jwt.verify(token, config.siteConfig.loginSalt.trim())
       req.headers.userId = info.userId
       const user = await getUserById(info.userId)
       if (user == null || user.status !== Status.Normal)

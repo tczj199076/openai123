@@ -33,6 +33,14 @@ const show = computed({
 })
 
 async function handleSaveChatRoomPrompt() {
+  // 获取浏览器URL中的chat后面的数值
+  const chatId = window.location.href.split('/').pop()
+
+  // 拼接localStorage的key
+  const localStorageKey = `prompt_${chatId}`
+
+  // 删除localStorage的key
+  localStorage.removeItem(localStorageKey)
   if (!currentChatHistory.value || !currentChatHistory.value)
     return
 
