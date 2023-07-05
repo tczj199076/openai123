@@ -1,10 +1,9 @@
-<script lang="ts" setup>
+<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { NButton, NImage, NInput, NModal, NSpace, useMessage } from 'naive-ui'
-import { t } from '@/locales'
 import { fetchUpdateChatRoomPrompt } from '@/api'
-import { useChatStore } from '@/store'
 import { getToken } from '@/store/modules/auth/helper'
+import { useChatStore } from '@/store'
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emit>()
@@ -13,7 +12,8 @@ const chatStore = useChatStore()
 const currentChatHistory = computed(() => chatStore.getChatHistoryByCurrentActive)
 const ms = useMessage()
 const testing = ref(false)
-const title = `AI角色定制 [${currentChatHistory.value?.title}]`
+// const title = `选择AI角色 [${currentChatHistory.value?.title}]`
+const title = '选择AI角色'
 
 interface Props {
   visible: boolean
@@ -35,6 +35,7 @@ const show = computed({
 
 // 定义用于存储接口返回的数据的变量
 const data = ref<any>(null)
+const selectedImage = ref<any>(null)
 
 async function fetchData() {
   try {
@@ -84,6 +85,10 @@ function getImageUrl(path: string | undefined) {
   return ''
 }
 
+function selectImage(item: any) {
+  selectedImage.value = item
+}
+
 async function handleUsePrompt(item: any) {
   if (currentChatHistory.value) {
     const timestamp = Date.now()
@@ -101,15 +106,29 @@ async function handleUsePrompt(item: any) {
 
 <template>
   <NModal
-    v-model:show="show" :auto-focus="false" class="custom-card" preset="card" :style="{ width: '600px' }"
-    :title="title" size="huge" :bordered="false" style="background: linear-gradient(to bottom right, #728da8, #abadb9);"
+    v-model:show="show"
+    :auto-focus="false"
+    class="custom-card"
+    preset="card"
+    :style="{ width: '600px' }"
+    :title="title"
+    size="huge"
+    :bordered="false"
+    style="background: linear-gradient(to bottom right, #728da8, #abadb9);"
   >
     <!-- 循环显示data.info的值 -->
     <div v-if="data" class="horizontal-container">
       <div v-for="item in data" :key="item.id" class="horizontal-item">
         <div class="image-container">
-          <NImage width="100" height="100" :src="getImageUrl(item.path)" />
-          <NButton type="warning" class="use-button" @click="handleUsePrompt(item);handleSaveChatRoomPrompt()">
+          <NImage
+            width="100"
+            height="100"
+            preview-disabled
+            :src="getImageUrl(item.path)"
+            :class="{ selected: item === selectedImage }"
+            @click="selectImage(item);handleUsePrompt(item)"
+          />
+          <NButton type="warning" class="use-button" @click="selectImage(item);handleUsePrompt(item)">
             {{ item.name }}
           </NButton>
         </div>
@@ -124,8 +143,8 @@ async function handleUsePrompt(item: any) {
     />
     <template #footer>
       <NSpace justify="end">
-        <NButton style="display:none" :loading="testing" type="warning" @click="handleSaveChatRoomPrompt">
-          {{ t('common.save') }}
+        <NButton :loading="testing" type="warning" @click="handleSaveChatRoomPrompt">
+          <!-- {{ t('common.save') }} -->使用
         </NButton>
       </NSpace>
     </template>
@@ -155,5 +174,9 @@ async function handleUsePrompt(item: any) {
   top: 110px;
   left: 50%;
   transform: translateX(-50%);
+}
+
+.selected {
+  border: 2px solid #f19d6c; /* 这里可以根据需要修改边框的样式 */
 }
 </style>

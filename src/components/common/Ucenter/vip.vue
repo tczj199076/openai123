@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch, watchEffect } from 'vue'
 import { NButton, NModal, useMessage } from 'naive-ui'
 import { getToken } from '@/store/modules/auth/helper'
 // import { useBasicLayout } from '@/hooks/useBasicLayout'
@@ -57,7 +57,7 @@ const inputRef = ref<HTMLInputElement | null>(null)
 const balanceValue = ref(0)
 
 // 计算属性，用于动态显示余额信息
-const balance = computed(() => `￥${balanceValue.value}`)
+const balance = computed(() => `${balanceValue.value}`)
 async function handleBuy(item: Product) {
   try {
     // 调用接口获取余额信息
@@ -92,7 +92,7 @@ const orderIdFinal = ref<string>('')
 async function handleConfirmOrder() {
   const vip_id = currentItem.value?.id ?? ''
   const order_price = currentItem.value?.price ?? 0
-  const actualPrice = order_price - couponPrice.value
+  const actualPrice = order_price - couponPrice.value < 0 ? 0 : order_price - couponPrice.value
   const price = actualPrice.toFixed(2)
   const coupon_price = inputRef.value?.value ?? ''
 
@@ -112,6 +112,11 @@ async function handleConfirmOrder() {
       confirmOrder.value = true
       updateImageAndText(result)
     }
+    else if (result.code === 2) {
+      confirmOrder.value = false
+      message.success('支付成功')
+      window.location.reload() // 刷新页面
+    }
     else {
       message.error(result.info)
     }
@@ -123,7 +128,7 @@ async function handleConfirmOrder() {
 
 function updateImageAndText(result: any): void {
   let count = 0
-  const maxCount = 150 // 最大请求次数
+  const maxCount = 100 // 最大请求次数
   nextTick(() => {
     const wxImg = document.getElementById('wxImg') as HTMLImageElement
     const aliImg = document.getElementById('aliImg') as HTMLImageElement
@@ -164,7 +169,7 @@ function updateImageAndText(result: any): void {
             window.location.reload() // 刷新页面
           }
           else if (result.code === 2) {
-            message.success(result.info)
+            message.error(result.info)
             clearInterval(intervalID) // 如果订单已支付成功，清除定时器并退出方法
           }
         }
@@ -180,7 +185,7 @@ function updateImageAndText(result: any): void {
         clearInterval(intervalID) // 清除定时器
         message.warning('支付结果确认超时，请联系客服处理！') // 弹出提示信息
       }
-    }, 2000)
+    }, 5000)
   })
 }
 
@@ -191,22 +196,25 @@ const actualPrice = computed(() => {
   return Math.max(actualPrice, 0).toFixed(2) // 添加Math.max方法，确保actualPrice的值最少等于0，并且保留两位小数
 })
 
-watch(
-  () => inputRef.value?.value,
-  (newVal) => {
-    const num = Number(newVal || 0)
-    if (num > balanceValue.value) { // 如果用户输入的余额抵扣金额大于可用余额，则将其设置为可用余额
+function handleModalClose() {
+  confirmOrder.value = false
+}
+
+function handleInput() {
+  // 手动触发监听器
+  watchEffect(() => {
+    const num = Number(inputRef.value?.value || 0)
+    if (num > balanceValue.value)
       couponPrice.value = balanceValue.value
-    }
-    else {
-      couponPrice.value = num // 否则直接更新couponPrice
-    }
-  },
-)
+
+    else
+      couponPrice.value = num
+  })
+}
 </script>
 
 <template>
-  <NModal v-model:show="vip" style="width: 90%; max-width: 960px;background: linear-gradient(to bottom right, #728da8, #abadb9);" preset="card">
+  <NModal v-model:show="vip" style="width: 90%; max-width: 960px;background: linear-gradient(to bottom right, #728da8, #abadb9);" preset="card" :on-after-leave="handleModalClose">
     <div v-if="loaded && buy">
       <div class="container">
         <div class="row mt-5">
@@ -268,8 +276,8 @@ watch(
                     余额抵扣：
                   </div>
                   <div class="col" style="display: flex; align-items: center;">
-                    <input id="coupon_price" ref="inputRef" v-model="couponPrice" max="4" type="number" class="form-control form-control-sm" style="margin-right: 4px;">
-                    <span style="font-size: 14px;">可用余额：{{ balance }}</span>
+                    <input id="coupon_price" ref="inputRef" v-model="couponPrice" :max="balance" type="number" class="form-control form-control-sm" style="margin-right: 4px;" @input="handleInput">
+                    <span style="font-size: 14px;">可用余额：￥{{ balance }}</span>
                   </div>
                 </div>
                 <div class="row mt-2 dark:text-black" style="font-size:16px">
@@ -321,10 +329,7 @@ watch(
     <div v-else>
       <div class="pricing-header  px-3 py-3 pt-md-3 pb-md-3 mx-auto text-center">
         <p class="lead fs-2 dark:text-black" style="font-weight:bold">
-          开通会员，获取AI聊天权限
-        </p>
-        <p class="lead dark:text-black" style="font-weight:bold">
-          不同套餐，发送的消息次数不同。
+          开通会员，获取更多AI聊天权限
         </p>
       </div>
       <div v-if="loaded && data">

@@ -12,7 +12,8 @@ const chatStore = useChatStore()
 const currentChatHistory = computed(() => chatStore.getChatHistoryByCurrentActive)
 const ms = useMessage()
 const testing = ref(false)
-const title = `AI角色定制 [${currentChatHistory.value?.title}]`
+// const title = `AI角色定制 [${currentChatHistory.value?.title}]`
+const title = 'AI角色定制'
 
 interface Props {
   visible: boolean

@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
 import { NButton, NCollapse, NCollapseItem, NModal, useMessage } from 'naive-ui'
+import TextComponent from './gptText.vue'
 import { getToken } from '@/store/modules/auth/helper'
-
 const props = defineProps<Props>()
 
 const emit = defineEmits<Emit>()
@@ -76,7 +76,7 @@ function selectItem(content: ContentData) {
 }
 
 function replaceBrackets(content: string): string {
-  return content.replace(/\{(.+?)\}/g, '<input class="user-input" style="color: #333;width: 100%;height: 30px;padding: 2px 5px; border: 1px solid #ff7220FF;border-radius: 4px;" placeholder="请输入内容" />')
+  return content.replace(/\{(.+?)\}/g, '<input ref="userInput" class="user-input" style="color: #333;height: 30px;padding: 2px 5px; border: 1px solid #ff7220FF;border-radius: 4px; width: auto; min-width: 50px;" placeholder="请输入" oninput="this.style.width = ((this.value.length + 1) * 14) + \'px\';" />')
 }
 
 async function copyToClipboard(content: string, id: number) {
@@ -121,12 +121,12 @@ async function copyToClipboard(content: string, id: number) {
 
 <template>
   <NModal
+    id="tipsHere"
     v-model:show="tips"
-    style="width: 100%; max-width: 1200px;background: linear-gradient(to bottom right, #728da8, #abadb9);"
-    preset="card"
+    style="width: 100%; max-width: 1400px;background: linear-gradient(to bottom right, #728da8, #abadb9);" preset="card"
   >
     <div style="display: flex;">
-      <NCollapse style="flex: 1; padding-right: 10px;">
+      <NCollapse style="flex: 1; padding-right: 10px;" :accordion="true">
         <!-- 遍历数据渲染折叠面板 -->
         <NCollapseItem
           v-for="(contents, category) in data"
@@ -149,37 +149,51 @@ async function copyToClipboard(content: string, id: number) {
           </div>
         </NCollapseItem>
       </NCollapse>
-      <div style="display: flex; flex-direction: column; flex: 1; padding: 0 30px 0 15px; ">
+      <div style="display: flex; flex-direction: column; flex: 5; padding: 0 30px 0 15px;">
         <div v-if="activeContent">
           <h3 style="text-align:center;font-size: 18px;font-weight: bold;">
             示例
           </h3>
-          <div class="content-text" v-html="replaceBrackets(activeContent!.content)" />
-          <h3 style="text-align:center;font-size: 18px;font-weight: bold;">
-            GPT返回示例
-          </h3>
-          <div class="content-text" style="max-height: 400px; max-width: 400px;padding:10px; overflow-y: auto; white-space: pre-line !important;" v-html="activeContent!.result" />
+          <div style="margin-bottom: 10px;">
+            <TextComponent
+              ref="textRef"
+              :inversion="true"
+              :error="false"
+              :text="activeContent!.content"
+              :loading="false"
+              :as-raw-text="false"
+              style="max-width:600px;float:right"
+            />
+          </div>
+          <div>
+            <TextComponent
+              ref="textRef"
+              :inversion="false"
+              :error="false"
+              :text="activeContent!.result"
+              :loading="false"
+              :as-raw-text="false"
+              style="overflow-y: auto;max-height: 600px;max-width:800px; white-space: pre-line !important;"
+            />
+          </div>
+          <!-- 注释部分 -->
+          <div class="comment-container mt-2" style="border: 1px solid #ff7220;padding: 10px;">
+            <div class="divider" /> <!-- 添加横线 -->
+            <div class="content-text" v-html="replaceBrackets(activeContent!.desc)" />
+            <div style="width: 100%;text-align:center;">
+              <NButton
+                type="primary"
+                size="small"
+                style="color:#fff"
+                @click.stop="copyToClipboard(activeContent!.desc, activeContent!.id)"
+              >
+                复制并使用
+              </NButton>
+            </div>
+          </div>
         </div>
         <div v-else>
           请选择一个折叠项查看详情
-        </div>
-      </div>
-      <div style="display: flex; flex-direction: column; flex: 1; padding-left: 10px;">
-        <div v-if="activeContent">
-          <h3 style="text-align:center;font-size: 18px;font-weight: bold;">
-            使用
-          </h3>
-          <div class="content-text" v-html="replaceBrackets(activeContent!.desc)" />
-          <div style="width: 100%;text-align:center;">
-            <NButton
-              type="primary"
-              size="small"
-              style="color:#fff"
-              @click.stop="copyToClipboard(activeContent!.desc, activeContent!.id)"
-            >
-              复制并使用
-            </NButton>
-          </div>
         </div>
       </div>
     </div>
@@ -224,7 +238,21 @@ async function copyToClipboard(content: string, id: number) {
   word-break: break-word;
 }
 
-::v-deep.content-text>p>span {text-wrap:wrap !important}
+::v-deep .markdown-body>p>span {text-wrap:wrap !important}
 
 body,a,table,div,span,td,th,input,select{overflow-x:hidden;overflow-y:auto;word-break:break-all; }
+
+.comment-container {
+  position: relative;
+  clear: both;
+}
+
+.divider {
+  position: absolute;
+  top: -10px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: rgb(197, 25, 25);
+}
 </style>

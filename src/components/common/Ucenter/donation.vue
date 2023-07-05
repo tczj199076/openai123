@@ -49,7 +49,7 @@ watch(() => props.visible, (newVal) => {
 </script>
 
 <template>
-  <NModal v-model:show="donation" preset="card" style="width: 100%; max-width: 1200px;background: linear-gradient(to bottom right, #728da8, #abadb9); ">
+  <NModal v-model:show="donation" preset="card" style="width: 100%; max-width: 600px;background: linear-gradient(to bottom right, #728da8, #abadb9); ">
     <div v-if="loaded">
       <p style="margin-top: 20px;" v-html="data.donation_context" />
     </div>

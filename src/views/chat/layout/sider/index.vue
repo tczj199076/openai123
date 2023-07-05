@@ -102,10 +102,10 @@ watch(
             <NButton type="warning" dark:text-white block @click="tips = true">
               {{ $t('store.siderButton') }}
             </NButton>
-            <NButton v-if="state.status === 1" id="buy_vip" type="warning" dark:text-white block @click="vip = true">
+            <NButton id="buy_vip" type="warning" dark:text-white block @click="vip = true">
               {{ $t('store.vip') }}
             </NButton>
-            <NButton v-else type="warning" dark:text-white block @click="donation = true">
+            <NButton type="warning" dark:text-white block @click="donation = true">
               {{ $t('store.donation') }}
             </NButton>
             <NButton type="warning" dark:text-white block @click="ucenter = true">
